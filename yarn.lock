@@ -56,35 +56,13 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@floating-live/acfun@workspace:packages/acfun"
   dependencies:
-    "@types/fs-extra": "npm:^9.0.13"
     "@types/websocket": "npm:^1.0.5"
     "@types/ws": "npm:^8.5.3"
     acfun-live-danmaku: "npm:^0.7.3"
-    axios: "npm:^1.4.0"
-    fs-extra: "npm:^11.1.0"
     rimraf: "npm:^3.0.2"
     ts-node: "npm:^10.9.1"
     typescript: "npm:^4.8.4"
   peerDependencies:
-    floating-live: ^0.15.0
-  languageName: unknown
-  linkType: soft
-
-"@floating-live/auth@workspace:packages/auth":
-  version: 0.0.0-use.local
-  resolution: "@floating-live/auth@workspace:packages/auth"
-  dependencies:
-    "@types/fs-extra": "npm:^9.0.13"
-    "@types/websocket": "npm:^1.0.5"
-    "@types/ws": "npm:^8.5.3"
-    axios: "npm:^1.4.0"
-    bilibili-live-ws: "npm:^6.3.1"
-    fs-extra: "npm:^11.1.0"
-    rimraf: "npm:^3.0.2"
-    ts-node: "npm:^10.9.1"
-    typescript: "npm:^4.8.4"
-  peerDependencies:
-    events: ^3.3.0
     floating-live: ^0.15.0
   languageName: unknown
   linkType: soft
@@ -93,6 +71,21 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@floating-live/bilibili@workspace:packages/bilibili"
   dependencies:
+    "@types/websocket": "npm:^1.0.5"
+    "@types/ws": "npm:^8.5.3"
+    bilibili-live-ws: "npm:^6.3.1"
+    rimraf: "npm:^3.0.2"
+    ts-node: "npm:^10.9.1"
+    typescript: "npm:^4.8.4"
+  peerDependencies:
+    floating-live: ^0.15.0
+  languageName: unknown
+  linkType: soft
+
+"@floating-live/plugin-auth@workspace:packages/plugin-auth":
+  version: 0.0.0-use.local
+  resolution: "@floating-live/plugin-auth@workspace:packages/plugin-auth"
+  dependencies:
     "@types/fs-extra": "npm:^9.0.13"
     "@types/websocket": "npm:^1.0.5"
     "@types/ws": "npm:^8.5.3"
@@ -103,18 +96,15 @@ __metadata:
     ts-node: "npm:^10.9.1"
     typescript: "npm:^4.8.4"
   peerDependencies:
+    events: ^3.3.0
     floating-live: ^0.15.0
   languageName: unknown
   linkType: soft
 
-"@floating-live/console-event@workspace:packages/console-event":
+"@floating-live/plugin-console-event@workspace:packages/plugin-console-event":
   version: 0.0.0-use.local
-  resolution: "@floating-live/console-event@workspace:packages/console-event"
+  resolution: "@floating-live/plugin-console-event@workspace:packages/plugin-console-event"
   dependencies:
-    "@types/fs-extra": "npm:^9.0.13"
-    "@types/websocket": "npm:^1.0.5"
-    "@types/ws": "npm:^8.5.3"
-    fs-extra: "npm:^11.1.0"
     rimraf: "npm:^3.0.2"
     ts-node: "npm:^10.9.1"
     typescript: "npm:^4.8.4"
@@ -124,13 +114,24 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@floating-live/console-message@workspace:packages/console-message":
+"@floating-live/plugin-console-message@workspace:packages/plugin-console-message":
   version: 0.0.0-use.local
-  resolution: "@floating-live/console-message@workspace:packages/console-message"
+  resolution: "@floating-live/plugin-console-message@workspace:packages/plugin-console-message"
+  dependencies:
+    rimraf: "npm:^3.0.2"
+    ts-node: "npm:^10.9.1"
+    typescript: "npm:^4.8.4"
+  peerDependencies:
+    events: ^3.3.0
+    floating-live: ^0.15.0
+  languageName: unknown
+  linkType: soft
+
+"@floating-live/plugin-save@workspace:packages/plugin-save":
+  version: 0.0.0-use.local
+  resolution: "@floating-live/plugin-save@workspace:packages/plugin-save"
   dependencies:
     "@types/fs-extra": "npm:^9.0.13"
-    "@types/websocket": "npm:^1.0.5"
-    "@types/ws": "npm:^8.5.3"
     fs-extra: "npm:^11.1.0"
     rimraf: "npm:^3.0.2"
     ts-node: "npm:^10.9.1"
@@ -154,23 +155,6 @@ __metadata:
     ts-node: "npm:^10.9.1"
     typescript: "npm:^4.8.4"
   peerDependencies:
-    floating-live: ^0.15.0
-  languageName: unknown
-  linkType: soft
-
-"@floating-live/save@workspace:packages/save":
-  version: 0.0.0-use.local
-  resolution: "@floating-live/save@workspace:packages/save"
-  dependencies:
-    "@types/fs-extra": "npm:^9.0.13"
-    "@types/websocket": "npm:^1.0.5"
-    "@types/ws": "npm:^8.5.3"
-    fs-extra: "npm:^11.1.0"
-    rimraf: "npm:^3.0.2"
-    ts-node: "npm:^10.9.1"
-    typescript: "npm:^4.8.4"
-  peerDependencies:
-    events: ^3.3.0
     floating-live: ^0.15.0
   languageName: unknown
   linkType: soft

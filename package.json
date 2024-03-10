@@ -1,0 +1,28 @@
+{
+  "name": "@floating-live/plugins",
+  "private": true,
+  "version": "0.15.0",
+  "type": "commonjs",
+  "author": "Minteea",
+  "license": "GPLv3",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "tsc": "tsc -b"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^9.0.13",
+    "@types/websocket": "^1.0.5",
+    "@types/ws": "^8.5.3",
+    "floating-live": "^0.15.0",
+    "lerna": "^7.3.0",
+    "rimraf": "^3.0.2",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.8.4"
+  },
+  "packageManager": "yarn@4.1.1",
+  "peerDependencies": {
+    "floating-live": "^0.15.0"
+  }
+}

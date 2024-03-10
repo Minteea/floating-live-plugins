@@ -1,3 +1,13 @@
+# Saves
+saves/
+
+# Yarn
+.yarn/
+
+# dist
+packages/**/*.js
+packages/**/*.d.ts
+
 # Logs
 logs
 *.log

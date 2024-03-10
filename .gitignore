@@ -3,6 +3,7 @@ saves/
 
 # Yarn
 .yarn/
+.yarnrc.yml
 
 # dist
 packages/**/*.js

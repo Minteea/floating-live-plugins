@@ -1,6 +1,15 @@
-import type { FloatingLive, PlatformInfo } from "floating-live";
-import acfunLive from "./room";
-import { getDid, parseCookieString, visitorLogin } from "./utils";
+import {
+  RoomStatus,
+  type FloatingLive,
+  type PlatformInfo,
+} from "floating-live";
+import { RoomAcfun } from "./room";
+import {
+  getDid,
+  getStartPlayInfo,
+  parseCookieString,
+  visitorLogin,
+} from "./utils";
 
 declare module "floating-live" {
   interface FloatingCommandMap {
@@ -41,13 +50,67 @@ const platformInfo: PlatformInfo = {
 
 class Acfun {
   static pluginName = "acfun";
+  private tokens: { did: string; userId: number; st: string } | null = null;
   constructor(main: FloatingLive) {
     main.command.register(
       "acfun.room.create",
       (id: string | number, config?: object) => {
-        return new acfunLive(Number(id), config);
+        return new RoomAcfun(Number(id), config);
       }
     );
+
+    main.command.register("acfun.room.info", async (id: string | number) => {
+      if (!this.tokens) {
+        const did = await getDid();
+        const { userId, st } = await visitorLogin(did);
+        this.tokens = {
+          userId,
+          did,
+          st,
+        };
+      }
+      const authorId = parseInt("" + id);
+      const { did, userId, st } = { ...this.tokens };
+      const { liveId, caption, liveStartTime, enterRoomAttach } =
+        await getStartPlayInfo({
+          authorId,
+          userId: userId,
+          did: did,
+          st: st,
+        }).catch(() => ({
+          liveId: "",
+          caption: "",
+          liveStartTime: 0,
+          availableTickets: [] as string[],
+          enterRoomAttach: "",
+        }));
+      const { profile } = await fetch(
+        `https://live.acfun.cn/rest/pc-direct/user/userInfo?userId=${authorId}`,
+        {
+          method: "GET",
+        }
+      ).then((response) => response.json());
+      return {
+        platform: "acfun",
+        id: authorId,
+        key: `acfun:${authorId}`,
+        liveId: liveId,
+        detail: {
+          title: caption,
+          cover: `https://tx2.a.kwimgs.com/bs2/ztlc/cover_${liveId}_raw.jpg`,
+        },
+        anchor: {
+          id: authorId,
+          name: profile.name,
+          avatar: profile.avatar,
+        },
+        status: liveId ? RoomStatus.live : RoomStatus.off,
+        timestamp: liveStartTime,
+        available: !!enterRoomAttach,
+        connection: 0,
+        opened: false,
+      };
+    });
 
     main.command.register("acfun.credentials.check", async (credentials) => {
       const cookie = parseCookieString(credentials);

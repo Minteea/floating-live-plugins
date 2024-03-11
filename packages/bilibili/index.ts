@@ -4,9 +4,10 @@ import {
   checkLoginQRcode,
   generateLoginQRcode,
   getBuvid,
+  getInfoByRoom,
   getLoginUid,
-  parseCookieString,
 } from "./utils";
+import { parseInfo } from "./parser";
 
 interface BilibiliLoginInfo {
   credentials: string;
@@ -68,6 +69,10 @@ class Bilibili {
         return new RoomBilibili(Number(id), options);
       }
     );
+    main.command.register("bilibili.room.info", async (id: string | number) => {
+      const rawInfo = await getInfoByRoom(parseInt("" + id));
+      return parseInfo(rawInfo);
+    });
 
     main.command.register("bilibili.credentials.check", async (credentials) => {
       const buvid = (await getBuvid(credentials)) || "";

@@ -63,7 +63,7 @@ __metadata:
     ts-node: "npm:^10.9.1"
     typescript: "npm:^4.8.4"
   peerDependencies:
-    floating-live: ^0.15.0
+    floating-live: ^0.15.4
   languageName: unknown
   linkType: soft
 
@@ -78,7 +78,7 @@ __metadata:
     ts-node: "npm:^10.9.1"
     typescript: "npm:^4.8.4"
   peerDependencies:
-    floating-live: ^0.15.0
+    floating-live: ^0.15.4
   languageName: unknown
   linkType: soft
 
@@ -97,7 +97,7 @@ __metadata:
     typescript: "npm:^4.8.4"
   peerDependencies:
     events: ^3.3.0
-    floating-live: ^0.15.0
+    floating-live: ^0.15.4
   languageName: unknown
   linkType: soft
 
@@ -110,7 +110,7 @@ __metadata:
     typescript: "npm:^4.8.4"
   peerDependencies:
     events: ^3.3.0
-    floating-live: ^0.15.0
+    floating-live: ^0.15.4
   languageName: unknown
   linkType: soft
 
@@ -123,7 +123,7 @@ __metadata:
     typescript: "npm:^4.8.4"
   peerDependencies:
     events: ^3.3.0
-    floating-live: ^0.15.0
+    floating-live: ^0.15.4
   languageName: unknown
   linkType: soft
 
@@ -138,7 +138,7 @@ __metadata:
     typescript: "npm:^4.8.4"
   peerDependencies:
     events: ^3.3.0
-    floating-live: ^0.15.0
+    floating-live: ^0.15.4
   languageName: unknown
   linkType: soft
 
@@ -149,13 +149,13 @@ __metadata:
     "@types/fs-extra": "npm:^9.0.13"
     "@types/websocket": "npm:^1.0.5"
     "@types/ws": "npm:^8.5.3"
-    floating-live: "npm:^0.15.0"
+    floating-live: "npm:^0.15.4"
     lerna: "npm:^7.3.0"
     rimraf: "npm:^3.0.2"
     ts-node: "npm:^10.9.1"
     typescript: "npm:^4.8.4"
   peerDependencies:
-    floating-live: ^0.15.0
+    floating-live: ^0.15.4
   languageName: unknown
   linkType: soft
 
@@ -2333,12 +2333,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"floating-live@npm:^0.15.0":
-  version: 0.15.0
-  resolution: "floating-live@npm:0.15.0"
+"floating-live@npm:^0.15.4":
+  version: 0.15.4
+  resolution: "floating-live@npm:0.15.4"
   peerDependencies:
     events: ^3.3.0
-  checksum: 10c0/9b629a2744c09e07aa1c5d13cccbb9741ce90a3244f2947cbc533c4ecff2d0866f3f7fbd2b43024dcab5af59439b53b6f5252d8c0f09fbd23ba263585dd0a129
+  checksum: 10c0/4ce8bc4bd8015d0185fe0450678cf84654ba5a17ac6e7bf83aaed550e8c4a6066eaae92efcfd095674ae58aa9f5d6ffbb9d5b94ba2a3943a861a179a93f6f97e
   languageName: node
   linkType: hard
 

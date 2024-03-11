@@ -24,6 +24,6 @@
     "typescript": "^4.8.4"
   },
   "peerDependencies": {
-    "floating-live": "^0.15.0"
+    "floating-live": "^0.15.4"
   }
 }

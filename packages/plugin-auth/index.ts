@@ -52,7 +52,7 @@ class Auth {
       return this.check(platform, credentials);
     });
 
-    this.main.hook.register("add", ({ platform, id, options }) => {
+    this.main.hook.register("room.add", ({ platform, id, options }) => {
       const auths = this.list.get(platform);
       if (!auths) return;
       options.credentials ??= auths.credentials;

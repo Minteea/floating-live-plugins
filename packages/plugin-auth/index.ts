@@ -28,6 +28,9 @@ declare module "floating-live" {
   interface FloatingEventMap {
     "auth:update": (platform: string, userId: string | number) => void;
   }
+  interface FloatingValueMap {
+    [name: `auth.userId.${string}`]: number | string | undefined;
+  }
   interface LiveRoom {
     setCredentials?(credentials: string, tokens?: Record<string, any>): void;
   }
@@ -40,6 +43,7 @@ export class Auth {
     string,
     { credentials: string; tokens?: Record<string, any> }
   >();
+  private readonly info: Record<string, string | number | undefined> = {};
   constructor(main: FloatingLive) {
     this.main = main;
     main.command.register("auth", (platform, credentials) => {
@@ -64,6 +68,17 @@ export class Auth {
     const result = await this.check(platform, credentials);
     if (result) {
       this.set(platform, result.credentials, result.tokens);
+      this.setAuthInfo(platform, result.userId);
+    }
+  }
+  private setAuthInfo(platform: string, userId: number | string | undefined) {
+    this.info[platform] = userId;
+    if (this.main.value.has(`auth.userId.${platform}`)) {
+      this.main.value.register(`auth.userId.${platform}`, {
+        get: () => this.info[platform],
+      });
+    } else {
+      this.main.value.emit(`auth.userId.${platform}`, userId);
     }
   }
   /** 直接设置用户凭据 */

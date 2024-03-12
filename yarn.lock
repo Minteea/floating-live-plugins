@@ -146,7 +146,7 @@ __metadata:
     "@types/fs-extra": "npm:^9.0.13"
     "@types/websocket": "npm:^1.0.5"
     "@types/ws": "npm:^8.5.3"
-    floating-live: "npm:^0.15.6"
+    floating-live: "npm:^0.15.8"
     lerna: "npm:^7.3.0"
     rimraf: "npm:^3.0.2"
     ts-node: "npm:^10.9.1"
@@ -2330,12 +2330,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"floating-live@npm:^0.15.6":
-  version: 0.15.6
-  resolution: "floating-live@npm:0.15.6"
+"floating-live@npm:^0.15.8":
+  version: 0.15.8
+  resolution: "floating-live@npm:0.15.8"
   peerDependencies:
     events: ^3.3.0
-  checksum: 10c0/a21821d5bb0488986f368347abf28d460163b4306e00b5b3b453992690de58e14bc3cde095764e105766ab8f5ee0e8a3128e1f13e48d3b1acb4c2ab697f3c062
+  checksum: 10c0/e1b6cc5c4bac903988edc187501eece557dfa69fd9de307f8d755be6c00f60e4a2fac23a87a58a26f58bb13b63ba2e12a42f65611d6eb8a913bdd0845a09f0ec
   languageName: node
   linkType: hard
 

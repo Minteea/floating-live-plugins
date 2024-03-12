@@ -33,7 +33,7 @@ declare module "floating-live" {
   }
 }
 
-class Auth {
+export class Auth {
   static pluginName = "auth";
   readonly main: FloatingLive;
   private readonly list = new Map<

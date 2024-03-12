@@ -1,6 +1,9 @@
 # Saves
 saves/
 
+# Saves
+demo/test.ts
+
 # Yarn
 .yarn/
 .yarnrc.yml

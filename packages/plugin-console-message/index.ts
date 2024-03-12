@@ -6,7 +6,7 @@ import {
   UserType,
 } from "floating-live";
 
-class ConsoleMessage {
+export class ConsoleMessage {
   static pluginName = "consoleMessage";
   readonly main: FloatingLive;
   constructor(main: FloatingLive) {

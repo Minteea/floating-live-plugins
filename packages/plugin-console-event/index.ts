@@ -1,6 +1,6 @@
 import { FloatingLive } from "floating-live";
 
-class ConsoleEvent {
+export class ConsoleEvent {
   static pluginName = "consoleEvent";
   constructor(ctx: FloatingLive) {
     ctx.on("room:connecting", (key) => {

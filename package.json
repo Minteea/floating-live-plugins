@@ -1,7 +1,7 @@
 {
   "name": "@floating-live/plugins",
   "private": true,
-  "version": "0.15.0",
+  "version": "0.15.1",
   "type": "commonjs",
   "author": "Minteea",
   "license": "GPLv3",
@@ -15,7 +15,7 @@
     "@types/fs-extra": "^9.0.13",
     "@types/websocket": "^1.0.5",
     "@types/ws": "^8.5.3",
-    "floating-live": "^0.15.5",
+    "floating-live": "^0.15.6",
     "lerna": "^7.3.0",
     "rimraf": "^3.0.2",
     "ts-node": "^10.9.1",
@@ -23,6 +23,6 @@
   },
   "packageManager": "yarn@4.1.1",
   "peerDependencies": {
-    "floating-live": "^0.15.5"
+    "floating-live": "^0.15.6"
   }
 }

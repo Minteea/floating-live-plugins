@@ -1,6 +1,6 @@
 {
   "name": "@floating-live/bilibili",
-  "version": "0.15.1",
+  "version": "0.15.2",
   "type": "commonjs",
   "main": "index.js",
   "types": "index.d.ts",
@@ -24,6 +24,6 @@
     "typescript": "^4.8.4"
   },
   "peerDependencies": {
-    "floating-live": "^0.15.5"
+    "floating-live": "^0.15.6"
   }
 }

@@ -8,6 +8,7 @@ import {
   getDid,
   getStartPlayInfo,
   parseCookieString,
+  userLogin,
   visitorLogin,
 } from "./utils";
 
@@ -118,7 +119,9 @@ export class PluginAcfun {
       const acPasstoken = cookie["acPasstoken"];
       const authKey = cookie["auth_key"];
       if (acPasstoken && authKey) {
-        const result = await visitorLogin(did).catch(() => undefined);
+        const result = await userLogin(did, acPasstoken, authKey).catch(
+          () => undefined
+        );
         if (result) {
           const { st, userId, security } = result;
           return {

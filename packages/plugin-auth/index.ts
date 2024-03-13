@@ -73,7 +73,7 @@ export class Auth {
   }
   private setAuthInfo(platform: string, userId: number | string | undefined) {
     this.info[platform] = userId;
-    if (this.main.value.has(`auth.userId.${platform}`)) {
+    if (!this.main.value.has(`auth.userId.${platform}`)) {
       this.main.value.register(`auth.userId.${platform}`, {
         get: () => this.info[platform],
       });

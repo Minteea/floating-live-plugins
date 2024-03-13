@@ -162,12 +162,14 @@ export class RoomAcfun extends LiveRoom {
       liveId: liveId,
       detail: {
         title: caption,
-        cover: `https://tx2.a.kwimgs.com/bs2/ztlc/cover_${liveId}_raw.jpg`,
+        cover: liveId
+          ? `https://tx2.a.kwimgs.com/bs2/ztlc/cover_${liveId}_raw.jpg`
+          : undefined,
       },
       anchor: {
         id: id,
         name: profile.name,
-        avatar: profile.avatar,
+        avatar: profile.headUrl,
       },
       status: liveId ? RoomStatus.live : RoomStatus.off,
       timestamp: liveStartTime,

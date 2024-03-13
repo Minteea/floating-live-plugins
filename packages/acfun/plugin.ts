@@ -98,12 +98,14 @@ export class PluginAcfun {
         liveId: liveId,
         detail: {
           title: caption,
-          cover: `https://tx2.a.kwimgs.com/bs2/ztlc/cover_${liveId}_raw.jpg`,
+          cover: liveId
+            ? `https://tx2.a.kwimgs.com/bs2/ztlc/cover_${liveId}_raw.jpg`
+            : undefined,
         },
         anchor: {
           id: authorId,
           name: profile.name,
-          avatar: profile.avatar,
+          avatar: profile.headUrl,
         },
         status: liveId ? RoomStatus.live : RoomStatus.off,
         timestamp: liveStartTime,

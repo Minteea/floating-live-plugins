@@ -1,6 +1,6 @@
 {
   "name": "@floating-live/acfun",
-  "version": "0.15.4",
+  "version": "0.15.5",
   "type": "commonjs",
   "main": "index.js",
   "types": "index.d.ts",

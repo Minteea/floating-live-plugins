@@ -203,12 +203,13 @@ export class RoomAcfun extends LiveRoom {
   }
 
   /** 开启直播间监听 */
-  async open() {
-    if (this.opened || !this.available) return;
-    this.initClient();
-    //启动websocket连接
-    this.opened = true;
-    this.emit("open");
+  public async open() {
+    // 如果直播间监听已打开或处于正在打开状态，则返回
+    if (this.opened || this.opening) return;
+    this.opening = true;
+    await this.getInfo();
+    this.opening = false;
+    this.openWS();
   }
 
   /** 设置登录凭据 */
@@ -282,6 +283,7 @@ export class RoomAcfun extends LiveRoom {
     // 如果直播间不可用，则返回
     if (!this.available) return;
     this.initClient();
+    this.opened = true;
     this.emit("open");
   }
   private emitConnention(status: ConnectStatus) {
@@ -304,7 +306,14 @@ export class RoomAcfun extends LiveRoom {
   /** 初始化直播服务端监听 */
   private async initClient() {
     if (this.client) return;
+    this.emitConnention(ConnectStatus.connecting);
+
     const client = new AcClient(this.tokens);
+
+    client.on("open", () => {
+      this.emitConnention(ConnectStatus.connected);
+    });
+
     client.on("EnterRoomAck", () => {
       this.emitConnention(ConnectStatus.entered);
     });
@@ -352,6 +361,7 @@ export class RoomAcfun extends LiveRoom {
     if (!this.opened) return;
     this.opened = false;
     this.client?.wsClose();
+    this.emitConnention(ConnectStatus.off);
     this.emit("close");
   }
   destroy() {

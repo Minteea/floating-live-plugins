@@ -156,6 +156,7 @@ export class RoomBilibili extends LiveRoom implements BilibiliRoomInfo {
   private openWS() {
     // 如果直播间不可用，则返回
     if (!this.available) return;
+    this.opened = true;
     this.initClient();
     this.emit("open");
   }
@@ -263,6 +264,7 @@ export class RoomBilibili extends LiveRoom implements BilibiliRoomInfo {
     if (!this.opened) return;
     this.opened = false;
     this.client?.close();
+    this.emitConnention(ConnectStatus.off);
     this.emit("close");
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@floating-live/bilibili",
-  "version": "0.15.2",
+  "version": "0.15.3",
   "type": "commonjs",
   "main": "index.js",
   "types": "index.d.ts",

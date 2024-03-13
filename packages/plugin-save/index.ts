@@ -32,12 +32,12 @@ export class Save {
     this.path = config.path || "";
 
     this.messageSave = new MsgSave(main, {
-      filePath: this.path,
+      filePath: path.resolve(this.rootPath, this.path),
       sliceByStatus: true,
       open: !!config.message,
     });
     this.rawSave = new MsgSave(main, {
-      filePath: this.path,
+      filePath: path.resolve(this.rootPath, this.path),
       suffix: ".raw",
       open: !!config.raw,
     });

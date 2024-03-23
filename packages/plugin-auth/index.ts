@@ -14,7 +14,7 @@ declare module "floating-live" {
     ) => Promise<{
       credentials: string;
       tokens?: Record<string, any>;
-      userId?: string;
+      userId?: string | number;
     } | void>;
     [name: `${string}.credentials.check`]: (
       credentials: string,
@@ -22,11 +22,11 @@ declare module "floating-live" {
     ) => Promise<{
       credentials: string;
       tokens?: Record<string, any>;
-      userId?: string;
+      userId?: string | number;
     }>;
   }
   interface FloatingEventMap {
-    "auth:update": (platform: string, userId: string | number) => void;
+    "auth:update": (platform: string, userId?: string | number) => void;
   }
   interface FloatingValueMap {
     [name: `auth.userId.${string}`]: number | string | undefined;
@@ -73,6 +73,7 @@ export class Auth {
   }
   private setAuthInfo(platform: string, userId: number | string | undefined) {
     this.info[platform] = userId;
+    this.main.emit("auth:update", platform, userId);
     if (!this.main.value.has(`auth.userId.${platform}`)) {
       this.main.value.register(`auth.userId.${platform}`, {
         get: () => this.info[platform],

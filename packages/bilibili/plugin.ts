@@ -1,13 +1,20 @@
-import type { FloatingLive, PlatformInfo } from "floating-live";
+import {
+  BasePlugin,
+  PluginContext,
+  type CommandContext,
+  type FloatingLive,
+  type LivePlatformInfo,
+} from "floating-live";
 import { RoomBilibili, RoomOptions } from "./room";
 import {
   checkLoginQRcode,
-  generateLoginQRcode,
+  qrcodeGenerate,
   getBuvid,
   getInfoByRoom,
   getLoginUid,
 } from "./utils";
 import { parseInfo } from "./parser";
+import type {} from "@floating-live/platform";
 
 interface BilibiliLoginInfo {
   credentials: string;
@@ -21,7 +28,7 @@ interface BilibiliLoginInfo {
 }
 
 declare module "floating-live" {
-  interface FloatingCommandMap {
+  interface AppCommandMap {
     "bilibili.credentials.check": (
       credentials: string
     ) => Promise<BilibiliLoginInfo>;
@@ -32,7 +39,7 @@ declare module "floating-live" {
   }
 }
 
-const platformInfo: PlatformInfo = {
+const platformInfo: LivePlatformInfo = {
   name: "bilibili",
   membership: {
     id: "guard",
@@ -60,40 +67,52 @@ const platformInfo: PlatformInfo = {
   },
 };
 
-export class PluginBilibili {
+export interface PluginOptions {
+  userAgent: string;
+}
+
+export class PluginBilibili extends BasePlugin {
   static pluginName = "bilibili";
-  constructor(main: FloatingLive) {
-    main.command.register(
+  init(ctx: PluginContext) {
+    ctx.whenRegister("platform", (platform) => {
+      platform.register("bilibili", platformInfo, ctx.signal);
+    });
+
+    ctx.registerCommand(
       "bilibili.room.create",
-      (id: string | number, options?: RoomOptions) => {
+      (e, id: string | number, options?: RoomOptions) => {
         return new RoomBilibili(Number(id), options);
       }
     );
-    main.command.register("bilibili.room.info", async (id: string | number) => {
-      const rawInfo = await getInfoByRoom(parseInt("" + id));
-      return parseInfo(rawInfo);
-    });
+    ctx.registerCommand(
+      "bilibili.room.data",
+      async (e, id: string | number) => {
+        const rawInfo = await getInfoByRoom(parseInt("" + id));
+        return parseInfo(rawInfo);
+      }
+    );
 
-    main.command.register("bilibili.credentials.check", async (credentials) => {
-      const buvid = (await getBuvid(credentials)) || "";
-      const userId = await getLoginUid(credentials);
-      return {
-        credentials,
-        tokens: {
+    ctx.registerCommand(
+      "bilibili.credentials.check",
+      async (e, credentials) => {
+        const buvid = (await getBuvid({ cookie: credentials })) || "";
+        const userId = await getLoginUid({ cookie: credentials });
+        return {
+          credentials,
+          tokens: {
+            userId,
+            buvid,
+          },
           userId,
-          buvid,
-        },
-        userId,
-      };
+        };
+      }
+    );
+
+    ctx.registerCommand("bilibili.login.qrcode.get", () => {
+      return qrcodeGenerate();
     });
 
-    main.manifest.register("platform", "bilibili", platformInfo);
-
-    main.command.register("bilibili.login.qrcode.get", () => {
-      return generateLoginQRcode();
-    });
-
-    main.command.register("bilibili.login.qrcode.poll", async (key) => {
+    ctx.registerCommand("bilibili.login.qrcode.poll", async (e, key) => {
       const [status, credentials] = await checkLoginQRcode(key);
       return { status, credentials };
     });

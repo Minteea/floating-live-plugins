@@ -1,21 +1,28 @@
 import {
   GiftInfo,
   MedalInfo,
-  Message,
-  RoomInfo,
-  RoomStatus,
+  LiveMessage,
+  LiveRoomData,
+  LiveRoomStatus,
   UserInfo,
   UserType,
-  generateId,
 } from "floating-live";
 import { GiftList, RawMessage } from "./types";
+
+// utils
+const generateId = (m: LiveMessage.All) =>
+  `${m.platform}:${m.roomId}-${m.type}:${m.userId}@${Date.now()}-${(
+    Math.random() * 0x10000
+  )
+    .toString(16)
+    .padStart(4, "0")}`;
 
 type ParsingFunction = {
   [K in keyof MessageTypes]: (
     data: MessageTypes[K],
-    room?: RoomInfo,
+    room?: LiveRoomData,
     giftList?: GiftList
-  ) => Message.All | undefined;
+  ) => LiveMessage.All | undefined;
 };
 
 interface MessageTypes {
@@ -45,9 +52,10 @@ function stringToNumber(num: string) {
 
 const parsingFunction: ParsingFunction = {
   CommonActionSignalComment: (data, room) => {
-    const msg: Message.Comment = {
+    const msg: LiveMessage.Comment = {
       platform: "acfun",
-      room: room?.id || 0,
+      roomId: room?.id || 0,
+      userId: 0,
       id: "",
       timestamp: parseInt(data.sendTimeMs),
       type: "comment",
@@ -57,12 +65,14 @@ const parsingFunction: ParsingFunction = {
       },
     };
     msg.id = generateId(msg);
+    msg.userId = msg.info.user.id;
     return msg;
   },
   CommonActionSignalGift: (data, room, giftList) => {
-    const msg: Message.Gift = {
+    const msg: LiveMessage.Gift = {
       platform: "acfun",
-      room: room?.id || 0,
+      roomId: room?.id || 0,
+      userId: 0,
       id: "",
       type: "gift",
       timestamp: parseInt(data.sendTimeMs),
@@ -72,12 +82,14 @@ const parsingFunction: ParsingFunction = {
       },
     };
     msg.id = generateId(msg);
+    msg.userId = msg.info.user.id;
     return msg;
   },
   CommonActionSignalUserEnterRoom: (data, room) => {
-    const msg: Message.Interact = {
+    const msg: LiveMessage.Interact = {
       platform: "acfun",
-      room: room?.id || 0,
+      roomId: room?.id || 0,
+      userId: 0,
       type: "entry",
       id: "",
       timestamp: parseInt(data.sendTimeMs),
@@ -86,12 +98,14 @@ const parsingFunction: ParsingFunction = {
       },
     };
     msg.id = generateId(msg);
+    msg.userId = msg.info.user.id;
     return msg;
   },
   CommonActionSignalUserFollowAuthor: (data, room) => {
-    const msg: Message.Interact = {
+    const msg: LiveMessage.Interact = {
       platform: "acfun",
-      room: room?.id || 0,
+      roomId: room?.id || 0,
+      userId: 0,
       type: "follow",
       id: "",
       timestamp: parseInt(data.sendTimeMs),
@@ -100,12 +114,14 @@ const parsingFunction: ParsingFunction = {
       },
     };
     msg.id = generateId(msg);
+    msg.userId = msg.info.user.id;
     return msg;
   },
   CommonActionSignalLike: (data, room) => {
-    const msg: Message.Interact = {
+    const msg: LiveMessage.Interact = {
       platform: "acfun",
-      room: room?.id || 0,
+      roomId: room?.id || 0,
+      userId: 0,
       type: "like",
       id: "",
       timestamp: parseInt(data.sendTimeMs),
@@ -114,12 +130,14 @@ const parsingFunction: ParsingFunction = {
       },
     };
     msg.id = generateId(msg);
+    msg.userId = msg.info.user.id;
     return msg;
   },
   AcfunActionSignalJoinClub: (data, room) => {
-    const msg: Message.Interact = {
+    const msg: LiveMessage.Interact = {
       platform: "acfun",
-      room: room?.id || 0,
+      roomId: room?.id || 0,
+      userId: 0,
       type: "join",
       id: "",
       timestamp: parseInt(data.joinTimeMs),
@@ -131,12 +149,14 @@ const parsingFunction: ParsingFunction = {
       },
     };
     msg.id = generateId(msg);
+    msg.userId = msg.info.user.id;
     return msg;
   },
   CommonStateSignalDisplayInfo: (data, room) => {
-    const msg: Message.LiveStats = {
+    const msg: LiveMessage.LiveStats = {
       platform: "acfun",
-      room: room?.id || 0,
+      roomId: room?.id || 0,
+      userId: 0,
       type: "live_stats",
       id: "",
       timestamp: getDateTimestamp(),
@@ -151,18 +171,19 @@ const parsingFunction: ParsingFunction = {
   ZtLiveScStatusChanged: (data, room) => {
     const base = {
       platform: "acfun",
-      room: room?.id || 0,
+      roomId: room?.id || 0,
+      userId: 0,
       id: "",
       timestamp: getDateTimestamp(),
     };
-    let msg: Message.LiveEnd | Message.LiveCut;
+    let msg: LiveMessage.LiveEnd | LiveMessage.LiveCut;
     switch (data.type) {
       case RawMessage.StatusChangedType.LIVE_CLOSED:
         msg = {
           ...base,
           type: "live_end",
           info: {
-            status: RoomStatus.off,
+            status: LiveRoomStatus.off,
           },
         };
         break;
@@ -239,7 +260,7 @@ function getGiftInfo(
 export function parseMessage<T extends keyof MessageTypes>(
   type: T,
   data: MessageTypes[T],
-  room?: RoomInfo,
+  room?: LiveRoomData,
   giftList?: GiftList
 ) {
   return parsingFunction[type]?.(data, room, giftList);

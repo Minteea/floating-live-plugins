@@ -1,5 +1,4 @@
-import { RoomInfo } from "floating-live";
-import { DanmakuMode } from "floating-live";
+import { DanmakuMode, LiveRoomData } from "floating-live";
 
 export namespace RawMessage {
   interface Base {
@@ -487,7 +486,7 @@ export interface RawInfo {
   };
 }
 
-export interface BilibiliRoomInfo extends RoomInfo {
+export interface BilibiliRoomData extends LiveRoomData {
   roomId: number;
   shortId: number;
 }

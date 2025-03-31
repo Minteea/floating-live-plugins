@@ -1,12 +1,17 @@
-import { UserType, ImageSize, RoomStatus } from "floating-live/enums";
-import { ImageInfo, Message, RoomInfo } from "floating-live/types";
-import { generateId } from "floating-live/utils";
-import { BilibiliRoomInfo, RawInfo, RawMessage } from "./types";
+import { UserType, ImageSize, LiveRoomStatus } from "floating-live";
+import { ImageInfo, LiveMessage, LiveRoomData } from "floating-live";
+// import { generateId } from "floating-live";
+import { BilibiliRoomData, RawInfo, RawMessage } from "./types";
 type ParsingFunction<T extends RawMessage.All> = {
-  [K in T["cmd"]]: (msg: any, room?: RoomInfo) => Message.All | undefined;
+  [K in T["cmd"]]: (
+    msg: any,
+    room?: LiveRoomData
+  ) => LiveMessage.All | undefined;
 };
 
 // utils
+const generateId = (m: LiveMessage.All) =>
+  `${m.platform}:${m.roomId}-${m.type}:${m.userId}@${Date.now()}`;
 
 // 获取当前时间戳，以替代无法从数据中获取时间戳的情况，精度为1s
 function getDateTimestamp() {
@@ -52,9 +57,10 @@ const parsingFunction: ParsingFunction<RawMessage.All> = {
     } else if (uid === room?.anchor.id) {
       identity = UserType.anchor;
     }
-    let danmaku: Message.Comment = {
+    let danmaku: LiveMessage.Comment = {
       platform: "bilibili",
-      room: room?.id || 0,
+      roomId: room?.id || 0,
+      userId: uid,
       type: "comment",
       timestamp: timestamp,
       id: msg_id!,
@@ -102,9 +108,10 @@ const parsingFunction: ParsingFunction<RawMessage.All> = {
       default:
         return;
     }
-    let interact: Message.Interact = {
+    let interact: LiveMessage.Interact = {
       platform: "bilibili",
-      room: room?.id || 0,
+      roomId: room?.id || 0,
+      userId: data.uid,
       type: type,
       id: msg_id!,
       timestamp: send_time || Math.floor(data.trigger_time / 1000000),
@@ -128,9 +135,10 @@ const parsingFunction: ParsingFunction<RawMessage.All> = {
   },
   SEND_GIFT: (msg: RawMessage.SEND_GIFT, room) => {
     const { data, msg_id, send_time } = msg;
-    let gift: Message.Gift = {
+    let gift: LiveMessage.Gift = {
       platform: "bilibili",
-      room: room?.id || 0,
+      roomId: room?.id || 0,
+      userId: data.uid,
       type: "gift",
       id: msg_id || data.combo_id,
       timestamp: send_time || data.timestamp * 1000,
@@ -166,9 +174,10 @@ const parsingFunction: ParsingFunction<RawMessage.All> = {
   },
   GUARD_BUY: (msg: RawMessage.GUARD_BUY, room) => {
     const { data, msg_id, send_time } = msg;
-    let gift: Message.Membership = {
+    let gift: LiveMessage.Membership = {
       platform: "bilibili",
-      room: room?.id || 0,
+      roomId: room?.id || 0,
+      userId: data.uid,
       type: "membership",
       id: msg_id!,
       timestamp: send_time || data.start_time * 1000,
@@ -195,9 +204,10 @@ const parsingFunction: ParsingFunction<RawMessage.All> = {
   },
   SUPER_CHAT_MESSAGE: (msg: RawMessage.SUPER_CHAT_MESSAGE, room) => {
     const { data, msg_id, send_time } = msg;
-    let sc: Message.Superchat = {
+    let sc: LiveMessage.Superchat = {
       platform: "bilibili",
-      room: room?.id || 0,
+      roomId: room?.id || 0,
+      userId: data.uid,
       type: "superchat",
       id: msg_id!,
       timestamp: send_time || data.ts * 1000,
@@ -235,9 +245,10 @@ const parsingFunction: ParsingFunction<RawMessage.All> = {
   },
   WATCHED_CHANGE: (msg: RawMessage.WATCHED_CHANGE, room) => {
     const { data, msg_id, send_time } = msg;
-    const stats: Message.LiveStats = {
+    const stats: LiveMessage.LiveStats = {
       platform: "bilibili",
-      room: room?.id || 0,
+      roomId: room?.id || 0,
+      userId: 0,
       type: "live_stats",
       id: msg_id!,
       timestamp: send_time || getDateTimestamp(),
@@ -250,9 +261,10 @@ const parsingFunction: ParsingFunction<RawMessage.All> = {
   },
   LIKE_INFO_V3_UPDATE: (msg: RawMessage.LIKE_INFO_V3_UPDATE, room) => {
     const { data, msg_id, send_time } = msg;
-    const stats: Message.LiveStats = {
+    const stats: LiveMessage.LiveStats = {
       platform: "bilibili",
-      room: room?.id || 0,
+      roomId: room?.id || 0,
+      userId: 0,
       type: "live_stats",
       id: msg_id!,
       timestamp: send_time || getDateTimestamp(),
@@ -266,9 +278,10 @@ const parsingFunction: ParsingFunction<RawMessage.All> = {
   ONLINE_RANK_COUNT: (msg: RawMessage.ONLINE_RANK_COUNT, room) => {
     const { data, msg_id, send_time } = msg;
     if (data.online_count == null) return;
-    const stats: Message.LiveStats = {
+    const stats: LiveMessage.LiveStats = {
       platform: "bilibili",
-      room: room?.id || 0,
+      roomId: room?.id || 0,
+      userId: 0,
       type: "live_stats",
       id: msg_id!,
       timestamp: send_time || getDateTimestamp(),
@@ -281,9 +294,10 @@ const parsingFunction: ParsingFunction<RawMessage.All> = {
   },
   ROOM_BLOCK_MSG: (msg: RawMessage.ROOM_BLOCK_MSG, room) => {
     const { data, msg_id, send_time } = msg;
-    const block: Message.Block = {
+    const block: LiveMessage.Block = {
       platform: "bilibili",
-      room: room?.id || 0,
+      roomId: room?.id || 0,
+      userId: data.uid,
       type: "block",
       id: msg_id!,
       timestamp: send_time || getDateTimestamp(),
@@ -304,9 +318,10 @@ const parsingFunction: ParsingFunction<RawMessage.All> = {
     const { msg_id, send_time } = msg;
     // 直播间开播
     if (msg.live_time) {
-      let live: Message.LiveStart = {
+      let live: LiveMessage.LiveStart = {
         platform: "bilibili",
-        room: room?.id || 0,
+        roomId: room?.id || 0,
+        userId: 0,
         type: "live_start",
         id: msg_id!,
         timestamp: send_time || msg.live_time * 1000,
@@ -321,9 +336,10 @@ const parsingFunction: ParsingFunction<RawMessage.All> = {
   CUT_OFF: (msg: RawMessage.CUT_OFF, room) => {
     const { msg_id, send_time } = msg;
     // 直播间被切断
-    let cut: Message.LiveCut = {
+    let cut: LiveMessage.LiveCut = {
       platform: "bilibili",
-      room: room?.id || 0,
+      roomId: room?.id || 0,
+      userId: 0,
       type: "live_cut",
       id: msg_id!,
       timestamp: send_time || getDateTimestamp(),
@@ -336,14 +352,15 @@ const parsingFunction: ParsingFunction<RawMessage.All> = {
   },
   PREPARING: (msg: RawMessage.PREPARING, room) => {
     const { msg_id, send_time } = msg;
-    let off: Message.LiveEnd = {
+    let off: LiveMessage.LiveEnd = {
       platform: "bilibili",
-      room: room?.id || 0,
+      roomId: room?.id || 0,
+      userId: 0,
       type: "live_end",
       id: msg_id!,
       timestamp: send_time || getDateTimestamp(),
       info: {
-        status: msg.round ? RoomStatus.round : RoomStatus.off,
+        status: msg.round ? LiveRoomStatus.round : LiveRoomStatus.off,
       },
     };
     off.id ??= generateId(off);
@@ -351,9 +368,10 @@ const parsingFunction: ParsingFunction<RawMessage.All> = {
   },
   ROOM_CHANGE: (msg: RawMessage.ROOM_CHANGE, room) => {
     const { data, msg_id, send_time } = msg;
-    let change: Message.LiveDetail = {
+    let change: LiveMessage.LiveDetail = {
       platform: "bilibili",
-      room: room?.id || 0,
+      roomId: room?.id || 0,
+      userId: 0,
       type: "live_detail",
       id: msg_id!,
       timestamp: send_time || getDateTimestamp(),
@@ -367,9 +385,10 @@ const parsingFunction: ParsingFunction<RawMessage.All> = {
   },
   ANCHOR_LOT_START: (msg: RawMessage.ANCHOR_LOT_START, room) => {
     const { data, msg_id, send_time } = msg;
-    let m: Message.Lottery = {
+    let m: LiveMessage.Lottery = {
       platform: "bilibili",
-      room: room?.id || 0,
+      roomId: room?.id || 0,
+      userId: 0,
       type: "lottery",
       timestamp: send_time || data.current_time * 1000,
       id: msg_id!,
@@ -392,13 +411,13 @@ const parsingFunction: ParsingFunction<RawMessage.All> = {
 /** 转换bilibili直播弹幕为floating通用格式 */
 export function parseMessage(
   data: RawMessage.All,
-  room?: BilibiliRoomInfo
-): Message.All | undefined {
+  room?: BilibiliRoomData
+): LiveMessage.All | undefined {
   return parsingFunction[data.cmd]?.(data, room);
 }
 
 /** 转换bilibili直播间信息为floating通用格式 */
-export function parseInfo(data: RawInfo): BilibiliRoomInfo {
+export function parseInfo(data: RawInfo): BilibiliRoomData {
   const { room_info, anchor_info, like_info_v3, watched_show }: RawInfo = data;
   return {
     platform: "bilibili",
@@ -422,9 +441,11 @@ export function parseInfo(data: RawInfo): BilibiliRoomInfo {
     },
     liveId: room_info.live_id_str,
     available: room_info.lock_status ? false : true,
-    status: room_info.lock_status ? RoomStatus.banned : room_info.live_status,
+    status: room_info.lock_status
+      ? LiveRoomStatus.banned
+      : (room_info.live_status as LiveRoomStatus),
     timestamp:
-      room_info.live_status == RoomStatus.live
+      room_info.live_status == LiveRoomStatus.live
         ? room_info.live_start_time * 1000
         : 0,
     opened: false,

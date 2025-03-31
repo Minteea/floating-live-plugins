@@ -1,7 +1,12 @@
-import { FloatingLive } from "floating-live";
+import {
+  AppPluginExposesMap,
+  BasePlugin,
+  FloatingLive,
+  ValueContext,
+} from "floating-live";
 
 declare module "floating-live" {
-  interface FloatingCommandMap {
+  interface AppCommandMap {
     auth: (platform: string, credentials: string) => Promise<void>;
     "auth.set": (
       platform: string,
@@ -25,10 +30,10 @@ declare module "floating-live" {
       userId?: string | number;
     }>;
   }
-  interface FloatingEventMap {
-    "auth:update": (platform: string, userId?: string | number) => void;
+  interface AppEventDetailMap {
+    "auth:update": { platform: string; userId?: string | number };
   }
-  interface FloatingValueMap {
+  interface AppValueMap {
     [name: `auth.userId.${string}`]: number | string | undefined;
   }
   interface LiveRoom {
@@ -36,33 +41,44 @@ declare module "floating-live" {
   }
 }
 
-export class Auth {
+export class Auth extends BasePlugin {
   static pluginName = "auth";
-  readonly main: FloatingLive;
   private readonly list = new Map<
     string,
     { credentials: string; tokens?: Record<string, any> }
   >();
+  private authValueContext = new Map<
+    string,
+    ValueContext<string | number | undefined>
+  >();
   private readonly info: Record<string, string | number | undefined> = {};
-  constructor(main: FloatingLive) {
-    this.main = main;
-    main.command.register("auth", (platform, credentials) => {
+  room: AppPluginExposesMap["room"] | null = null;
+  init() {
+    this.ctx.whenRegister("room", (room) => {
+      this.room = room;
+      return () => {
+        this.room = null;
+      };
+    });
+
+    this.ctx.registerCommand("auth", (e, platform, credentials) => {
       return this.auth(platform, credentials);
     });
-    main.command.register("auth.set", (platform, credentials, tokens) => {
+    this.ctx.registerCommand("auth.set", (e, platform, credentials, tokens) => {
       return this.set(platform, credentials, tokens);
     });
-    main.command.register("auth.check", (platform, credentials) => {
+    this.ctx.registerCommand("auth.check", (e, platform, credentials) => {
       return this.check(platform, credentials);
     });
 
-    this.main.hook.register("room.add", ({ platform, id, options }) => {
+    this.ctx.useHook("room.add", ({ platform, id, options }) => {
       const auths = this.list.get(platform);
       if (!auths) return;
       options.credentials ??= auths.credentials;
       options.tokens ??= auths.tokens;
     });
   }
+
   /** 检测并设置用户凭据 */
   async auth(platform: string, credentials: string) {
     const result = await this.check(platform, credentials);
@@ -73,13 +89,14 @@ export class Auth {
   }
   private setAuthInfo(platform: string, userId: number | string | undefined) {
     this.info[platform] = userId;
-    this.main.emit("auth:update", platform, userId);
-    if (!this.main.value.has(`auth.userId.${platform}`)) {
-      this.main.value.register(`auth.userId.${platform}`, {
+    this.ctx.emit("auth:update", { platform, userId });
+    if (!this.ctx.hasValue(`auth.userId.${platform}`)) {
+      const valueCtx = this.ctx.registerValue(`auth.userId.${platform}`, {
         get: () => this.info[platform],
       });
+      this.authValueContext.set(platform, valueCtx);
     } else {
-      this.main.value.emit(`auth.userId.${platform}`, userId);
+      this.authValueContext.get(platform)?.emit(userId);
     }
   }
   /** 直接设置用户凭据 */
@@ -89,14 +106,13 @@ export class Auth {
   }
   /** 更新现有房间的用户凭据 */
   update(platform: string, credentials: string, tokens?: Record<string, any>) {
-    this.main.room.keys.forEach((k) => {
-      const room = this.main.room.get(k);
-      room?.platform == platform && room.setCredentials?.(credentials, tokens);
+    this.room?.getList().forEach((r) => {
+      r?.platform == platform && r.setCredentials?.(credentials, tokens);
     });
   }
   /** 检查cookie并补充缺失的字段，返回完整cookie和用户tokens */
   async check(platform: string, credentials: string) {
-    return await this.main.call(`${platform}.credentials.check`, credentials);
+    return await this.ctx.call(`${platform}.credentials.check`, credentials);
   }
 }
 

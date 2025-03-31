@@ -1,13 +1,13 @@
-import { LiveRoom } from "floating-live/core";
-import { ConnectStatus, RoomStatus, UserType } from "floating-live/enums";
+import { LiveRoom } from "floating-live";
+import { LiveConnectionStatus, LiveRoomStatus, UserType } from "floating-live";
 import {
-  RoomDetail,
+  LiveRoomDetailInfo,
   MedalInfo,
   UserInfo,
-  Message,
-  RoomStatsInfo,
-  RoomInfo,
-} from "floating-live/types";
+  LiveMessage,
+  LiveRoomStatsInfo,
+  LiveRoomData,
+} from "floating-live";
 import { AcClient } from "acfun-live-danmaku/client";
 import { ConnectTokens, RawMessage } from "./types";
 import {
@@ -38,7 +38,7 @@ export class RoomAcfun extends LiveRoom {
   /** 房间id */
   readonly id: number;
   /** 直播展示信息 */
-  public detail: RoomDetail = {
+  public detail: LiveRoomDetailInfo = {
     /** 直播标题 */
     title: "",
     /** 分区 */
@@ -47,7 +47,7 @@ export class RoomAcfun extends LiveRoom {
     cover: "",
   };
   /** 直播数据信息 */
-  public stats: RoomStatsInfo = {
+  public stats: LiveRoomStatsInfo = {
     /** 点赞数 */
     like: 0,
     /** 在线观看数 */
@@ -127,7 +127,7 @@ export class RoomAcfun extends LiveRoom {
       });
   }
   async fetchInfo(): Promise<
-    RoomInfo & { availableTickets: string[]; enterRoomAttach: string }
+    LiveRoomData & { availableTickets: string[]; enterRoomAttach: string }
   > {
     const id = this.id;
     const { did, userId, st } = { ...this.tokens };
@@ -171,7 +171,7 @@ export class RoomAcfun extends LiveRoom {
         name: profile.name,
         avatar: profile.headUrl,
       },
-      status: liveId ? RoomStatus.live : RoomStatus.off,
+      status: liveId ? LiveRoomStatus.live : LiveRoomStatus.off,
       timestamp: liveStartTime,
       available: !!enterRoomAttach,
       connection: 0,
@@ -193,7 +193,7 @@ export class RoomAcfun extends LiveRoom {
     anchor,
     liveId,
     available,
-  }: RoomInfo) {
+  }: LiveRoomData) {
     this.status = status;
     this.timestamp = timestamp;
     this.detail = detail;
@@ -288,19 +288,19 @@ export class RoomAcfun extends LiveRoom {
     this.opened = true;
     this.emit("open");
   }
-  private emitConnention(status: ConnectStatus) {
+  private emitConnention(status: LiveConnectionStatus) {
     this.connection = status;
     switch (status) {
-      case ConnectStatus.connecting:
+      case LiveConnectionStatus.connecting:
         this.emit("connecting");
         break;
-      case ConnectStatus.connected:
+      case LiveConnectionStatus.connected:
         this.emit("connected");
         break;
-      case ConnectStatus.entered:
+      case LiveConnectionStatus.entered:
         this.emit("enter");
         break;
-      case ConnectStatus.disconnected:
+      case LiveConnectionStatus.disconnected:
         this.emit("disconnect");
         break;
     }
@@ -308,16 +308,16 @@ export class RoomAcfun extends LiveRoom {
   /** 初始化直播服务端监听 */
   private async initClient() {
     if (this.client) return;
-    this.emitConnention(ConnectStatus.connecting);
+    this.emitConnention(LiveConnectionStatus.connecting);
 
     const client = new AcClient(this.tokens);
 
     client.on("open", () => {
-      this.emitConnention(ConnectStatus.connected);
+      this.emitConnention(LiveConnectionStatus.connected);
     });
 
     client.on("EnterRoomAck", () => {
-      this.emitConnention(ConnectStatus.entered);
+      this.emitConnention(LiveConnectionStatus.entered);
     });
 
     client.on("StateSignal", (signalType: string, payload: any) => {
@@ -363,12 +363,11 @@ export class RoomAcfun extends LiveRoom {
     if (!this.opened) return;
     this.opened = false;
     this.client?.wsClose();
-    this.emitConnention(ConnectStatus.off);
+    this.emitConnention(LiveConnectionStatus.off);
     this.emit("close");
   }
   destroy() {
     this.close();
-    this.removeAllListeners();
   }
 }
 

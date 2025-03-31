@@ -1,6 +1,10 @@
-import { RoomStatus } from "floating-live";
 import fs from "fs-extra";
-import { FloatingLive } from "floating-live";
+import {
+  FloatingLive,
+  LiveRoomData,
+  LiveRoomStatus,
+  PluginContext,
+} from "floating-live";
 import path from "path";
 
 function getTimeStr(timestamp: number) {
@@ -21,8 +25,8 @@ function getTimeStr(timestamp: number) {
 /** 获取当次记录状态
  * S=直播开始 L=直播中 E=直播结束 O=未开播
  */
-function getRecordStatus(status?: RoomStatus, statusChanged?: boolean) {
-  if (status == RoomStatus.live) {
+function getRecordStatus(status?: LiveRoomStatus, statusChanged?: boolean) {
+  if (status == LiveRoomStatus.live) {
     /** 已开播 */
     return statusChanged ? "S" : "L";
   } else {
@@ -33,8 +37,8 @@ function getRecordStatus(status?: RoomStatus, statusChanged?: boolean) {
 
 interface SaveInfoConfig {
   platform: string;
-  room: string | number;
-  status: RoomStatus;
+  roomId: string | number;
+  status: LiveRoomStatus;
   timestamp: number;
   statusChanged: boolean;
 }
@@ -42,18 +46,18 @@ interface SaveInfoConfig {
 class SaveInfo implements SaveInfoConfig {
   /** 文件id */
   get fileId() {
-    return `${this.platform}_${this.room}-${getTimeStr(this.timestamp || 0)}${
+    return `${this.platform}_${this.roomId}-${getTimeStr(this.timestamp || 0)}${
       this.sliceByStatus ? getRecordStatus(this.status, this.statusChanged) : ""
     }${this.part ? `.${this.part}` : ""}`;
   }
   /** 平台 */
   platform: string;
   /** 房间号 */
-  room: string | number;
+  roomId: string | number;
   /** 时间戳 */
   timestamp: number;
   /** 状态 */
-  status: RoomStatus;
+  status: LiveRoomStatus;
   /** 文件是否存在 */
   exist: boolean = false;
   /** 记录状态是否已更改 */
@@ -70,7 +74,7 @@ class SaveInfo implements SaveInfoConfig {
   part: number;
   constructor({
     platform,
-    room,
+    roomId,
     status,
     timestamp,
     statusChanged,
@@ -78,7 +82,7 @@ class SaveInfo implements SaveInfoConfig {
     sliceByCount = 0,
   }: SaveInfoConfig & { sliceByStatus?: boolean; sliceByCount?: number }) {
     this.platform = platform;
-    this.room = room;
+    this.roomId = roomId;
     this.status = status;
     this.timestamp = timestamp;
     this.statusChanged = statusChanged;
@@ -95,8 +99,8 @@ class SaveInfo implements SaveInfoConfig {
 }
 
 class MsgSave {
-  /** 主模块 */
-  main: FloatingLive;
+  /** 获取房间数据 */
+  getRoomData: (key: string) => LiveRoomData | undefined;
   /** 文件路径 */
   path: string;
   /** 前缀 */
@@ -105,12 +109,13 @@ class MsgSave {
   suffix: string;
   /** 按状态分文件 */
   sliceByStatus: boolean;
+  /** 按消息数量分文件 */
   sliceByCount: number;
   paused: boolean;
   /** 列表 */
   list: Map<string, SaveInfo> = new Map();
   constructor(
-    main: FloatingLive,
+    { getRoomData }: { getRoomData: (key: string) => LiveRoomData | undefined },
     {
       filePath,
       prefix = "",
@@ -128,7 +133,7 @@ class MsgSave {
     }
   ) {
     this.paused = !open;
-    this.main = main;
+    this.getRoomData = getRoomData;
     this.path = filePath;
     this.prefix = prefix;
     this.suffix = suffix;
@@ -137,13 +142,13 @@ class MsgSave {
   }
   write(
     message: any,
-    { platform, room }: { platform: string; room: string | number }
+    { platform, roomId }: { platform: string; roomId: string | number }
   ) {
     if (this.paused) return;
-    const roomKey = `${platform}:${room}`;
+    const roomKey = `${platform}:${roomId}`;
     // 获取保存信息，若信息不存在，则设置一个信息
     const saveInfo =
-      this.list.get(roomKey) || this.createSaveInfo({ platform, room });
+      this.list.get(roomKey) || this.createSaveInfo({ platform, roomId });
     // 若文件不存在，则创建一个有record_info信息的.floatrec文件
     if (!saveInfo.exist) this.createFile(roomKey);
     const file = path.join(
@@ -174,37 +179,39 @@ class MsgSave {
   /** 设置保存信息 */
   setSaveInfo({
     platform,
-    room,
+    roomId,
     status,
     timestamp,
     statusChanged,
   }: SaveInfoConfig) {
     const saveInfo = new SaveInfo({
       platform,
-      room,
+      roomId,
       status,
       timestamp,
       statusChanged,
       sliceByStatus: this.sliceByStatus,
       sliceByCount: this.sliceByCount,
     });
-    const roomKey = `${platform}:${room}`;
+    const roomKey = `${platform}:${roomId}`;
     if (this.list.get(roomKey)?.fileId == saveInfo.fileId) return;
     this.list.set(roomKey, saveInfo);
   }
   /** 创建保存信息，用于记录信息可能不存在的情况 */
   createSaveInfo({
     platform,
-    room,
+    roomId,
   }: {
     platform: string;
-    room: string | number;
+    roomId: string | number;
   }) {
-    const { status, timestamp } = this.main.room.get(`${platform}:${room}`)
-      ?.info || { status: RoomStatus.off, timestamp: 0 };
+    const { status, timestamp } = this.getRoomData(`${platform}:${roomId}`) || {
+      status: LiveRoomStatus.off,
+      timestamp: 0,
+    };
     const saveInfoConfig = {
       platform,
-      room,
+      roomId,
       status,
       timestamp,
       statusChanged: false,
@@ -212,7 +219,7 @@ class MsgSave {
       sliceByCount: this.sliceByCount,
     };
     this.setSaveInfo(saveInfoConfig);
-    return this.list.get(`${platform}:${room}`)!;
+    return this.list.get(`${platform}:${roomId}`)!;
   }
   /** 创建记录文件 */
   createFile(roomKey: string) {
@@ -230,12 +237,12 @@ class MsgSave {
     const message = {
       type: "record_info",
       platform: saveInfo.platform,
-      room: saveInfo.room,
+      room: saveInfo.roomId,
       timestamp: saveInfo.timestamp,
       statusChanged: saveInfo.statusChanged,
       index: saveInfo.totalCount,
       part: saveInfo.part,
-      roomInfo: this.main.room.get(roomKey)?.info,
+      roomInfo: this.getRoomData(roomKey),
     };
     fs.writeFileSync(file, JSON.stringify(message) + ",", {
       encoding: "utf8",

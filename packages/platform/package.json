@@ -1,11 +1,11 @@
 {
-  "name": "@floating-live/acfun",
+  "name": "@floating-live/platform",
   "version": "0.16.0",
   "type": "module",
   "main": "index.js",
   "types": "index.d.ts",
   "author": "Minteea",
-  "license": "GPLv3",
+  "license": "MIT",
   "scripts": {
     "check": "tsc --noEmit",
     "clear": "rimraf *.js *.d.ts --glob",
@@ -13,16 +13,12 @@
     "prepack": "npm run build",
     "postpack": "npm run clear"
   },
-  "dependencies": {
-    "acfun-live-danmaku": "^0.7.3"
-  },
   "devDependencies": {
-    "@types/websocket": "^1.0.5",
-    "@types/ws": "^8.5.3",
     "rimraf": "^3.0.2",
     "typescript": "^4.8.4"
   },
   "peerDependencies": {
+    "events": "^3.3.0",
     "floating-live": "^0.16.0"
   }
 }

@@ -1,7 +1,8 @@
 import {
-  RoomStatus,
-  type FloatingLive,
-  type PlatformInfo,
+  BasePlugin,
+  PluginContext,
+  LiveRoomStatus,
+  type LivePlatformInfo,
 } from "floating-live";
 import { RoomAcfun } from "./room";
 import {
@@ -11,9 +12,10 @@ import {
   userLogin,
   visitorLogin,
 } from "./utils";
+import type {} from "@floating-live/platform";
 
 declare module "floating-live" {
-  interface FloatingCommandMap {
+  interface AppCommandMap {
     "acfun.credentials.check": (credentials: string) => Promise<{
       credentials: string;
       tokens: {
@@ -27,7 +29,7 @@ declare module "floating-live" {
   }
 }
 
-const platformInfo: PlatformInfo = {
+const platformInfo: LivePlatformInfo = {
   name: "acfun",
   gift: {
     action: "送出",
@@ -49,18 +51,22 @@ const platformInfo: PlatformInfo = {
   },
 };
 
-export class PluginAcfun {
+export class PluginAcfun extends BasePlugin {
   static pluginName = "acfun";
   private tokens: { did: string; userId: number; st: string } | null = null;
-  constructor(main: FloatingLive) {
-    main.command.register(
+  init(ctx: PluginContext) {
+    ctx.whenRegister("platform", (platform) => {
+      platform.register("acfun", platformInfo, ctx.signal);
+    });
+
+    ctx.registerCommand(
       "acfun.room.create",
-      (id: string | number, config?: object) => {
+      (e, id: string | number, config?: object) => {
         return new RoomAcfun(Number(id), config);
       }
     );
 
-    main.command.register("acfun.room.info", async (id: string | number) => {
+    ctx.registerCommand("acfun.room.data", async (e, id: string | number) => {
       if (!this.tokens) {
         const did = await getDid();
         const { userId, st } = await visitorLogin(did);
@@ -107,7 +113,7 @@ export class PluginAcfun {
           name: profile.name,
           avatar: profile.headUrl,
         },
-        status: liveId ? RoomStatus.live : RoomStatus.off,
+        status: liveId ? LiveRoomStatus.live : LiveRoomStatus.off,
         timestamp: liveStartTime,
         available: !!enterRoomAttach,
         connection: 0,
@@ -115,7 +121,7 @@ export class PluginAcfun {
       };
     });
 
-    main.command.register("acfun.credentials.check", async (credentials) => {
+    ctx.registerCommand("acfun.credentials.check", async (e, credentials) => {
       const cookie = parseCookieString(credentials);
       const did = cookie._did || (await getDid());
       const acPasstoken = cookie["acPasstoken"];
@@ -140,8 +146,6 @@ export class PluginAcfun {
         userId: 0,
       };
     });
-
-    main.manifest.register("platform", "acfun", platformInfo);
   }
 }
 

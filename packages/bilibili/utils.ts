@@ -1,4 +1,3 @@
-import { RoomInfo } from "floating-live";
 import { RawInfo } from "./types";
 
 const USER_AGENT =
@@ -42,15 +41,12 @@ export function parseCookieString(str: string) {
 }
 
 /** 获取登录用户的uid */
-export async function getLoginUid(cookie: string = ""): Promise<number> {
+export async function getLoginUid(options?: FetchOptions): Promise<number> {
   // cookie若缺少SESSDATA，一定属于未登录状态，uid返回0
-  if (!parseCookieString(cookie)["SESSDATA"]) return 0;
-  const res = await fetch(UID_INIT_URL, {
-    headers: {
-      Cookie: cookie,
-      "User-Agent": USER_AGENT,
-    },
-  }).then((res) => res.json());
+  if (!parseCookieString(options?.cookie || "")["SESSDATA"]) return 0;
+  const res = await customFetch(options, UID_INIT_URL).then((res) =>
+    res.json()
+  );
   if (res.code == 0) {
     return res.data.mid;
   } else {
@@ -60,26 +56,16 @@ export async function getLoginUid(cookie: string = ""): Promise<number> {
 }
 
 /** 获取buvid */
-export async function getBuvid(cookie: string = "") {
-  const res = await fetch(BUVID_INIT_URL, {
-    headers: {
-      Cookie: cookie,
-      "User-Agent": USER_AGENT,
-    },
-  });
+export async function getBuvid(options?: FetchOptions) {
+  const res = await customFetch(options, BUVID_INIT_URL, {});
   const resCookie = getCookie(res.headers);
   if (!resCookie) return;
   return parseCookieString(resCookie)["buvid2"];
 }
 
 /** 获取直播间弹幕token */
-export async function getToken(roomId: number, cookie: string = "") {
-  return await fetch(`${DANMAKU_SERVER_CONF_URL}?id=${roomId}`, {
-    headers: {
-      Cookie: cookie,
-      "User-Agent": USER_AGENT,
-    },
-  })
+export async function getToken(roomId: number, options?: FetchOptions) {
+  return await customFetch(options, `${DANMAKU_SERVER_CONF_URL}?id=${roomId}`)
     .then((res) => res.json())
     .then((res) => {
       return res.data?.token;
@@ -87,14 +73,10 @@ export async function getToken(roomId: number, cookie: string = "") {
 }
 
 /** 生成登录二维码 */
-export async function generateLoginQRcode() {
-  const res = await fetch(
-    "https://passport.bilibili.com/x/passport-login/web/qrcode/generate",
-    {
-      headers: {
-        "User-Agent": USER_AGENT,
-      },
-    }
+export async function qrcodeGenerate(options?: FetchOptions) {
+  const res = await customFetch(
+    options,
+    "https://passport.bilibili.com/x/passport-login/web/qrcode/generate"
   ).then((res) => res.json());
   return {
     url: res.data.url,
@@ -104,15 +86,12 @@ export async function generateLoginQRcode() {
 
 /** 检测登录二维码 */
 export async function checkLoginQRcode(
-  key: string
+  key: string,
+  options?: FetchOptions
 ): Promise<[number, string?]> {
-  const res = await fetch(
-    `https://passport.bilibili.com/x/passport-login/web/qrcode/poll?qrcode_key=${key}`,
-    {
-      headers: {
-        "User-Agent": USER_AGENT,
-      },
-    }
+  const res = await customFetch(
+    options,
+    `https://passport.bilibili.com/x/passport-login/web/qrcode/poll?qrcode_key=${key}`
   );
   const { code, message } = (await res.json()).data;
   if (code == 86101) {
@@ -136,10 +115,41 @@ export async function checkLoginQRcode(
 }
 
 /** 获取房间id */
-export async function getInfoByRoom(id: number): Promise<RawInfo> {
-  return await fetch(ROOM_INIT_URL + `?room_id=${id}`, {
+export async function getInfoByRoom(
+  id: number,
+  options?: FetchOptions
+): Promise<RawInfo> {
+  return await customFetch(options, `${ROOM_INIT_URL}?room_id=${id}`, {
     method: "GET",
   })
     .then((response) => response.json())
     .then((data) => data.data);
+}
+
+export interface FetchOptions {
+  /** 自定义fetch函数(适用于请求中转等情况) */
+  fetch?: (input: string, init?: RequestInit) => Promise<Response>;
+  /** 用户代理字段 */
+  userAgent?: string;
+  /** cookie字段 */
+  cookie?: string;
+}
+
+function customFetch(
+  {
+    fetch = globalThis.fetch,
+    userAgent = USER_AGENT,
+    cookie = "",
+  }: FetchOptions = {},
+  input: string | URL,
+  init?: RequestInit
+) {
+  return fetch(input.toString(), {
+    ...init,
+    headers: {
+      Cookie: cookie,
+      "User-Agent": userAgent,
+      ...init?.headers,
+    },
+  });
 }

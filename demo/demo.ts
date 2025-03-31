@@ -6,12 +6,13 @@ import { PluginAcfun } from "../packages/acfun";
 import ConsoleEvent from "../packages/plugin-console-event";
 import Auth from "../packages/plugin-auth";
 import Save from "../packages/plugin-save";
+import PluginPlatform from "@floating-live/platform";
 
 const options = {
   rooms: [
     {
       platform: "bilibili",
-      id: 6136246,
+      id: 299, //6136246,
     },
     /* {
       platform: "acfun",
@@ -23,28 +24,38 @@ const options = {
 
 // 创建live实例
 const floating = new FloatingLive();
-floating.plugin.register(ConsoleEvent);
-floating.plugin.register(Auth);
-floating.plugin.register(PluginBilibili);
-floating.plugin.register(PluginAcfun);
 
-// 初始化内置插件
-floating.plugin.register(ConsoleMessage);
-floating.plugin.register(Save);
+function registerPlugin() {
+  return Promise.all([
+    floating.register(ConsoleEvent),
+    floating.register(PluginPlatform),
+    floating.register(Auth),
+    floating.register(PluginBilibili),
+    // floating.register(PluginAcfun),
+
+    // 初始化内置插件
+    floating.register(ConsoleMessage),
+    floating.register(Save),
+  ]);
+}
 
 async function lifeCycle() {
   console.log("Floating Live is on :)");
 }
 
 lifeCycle()
+  .then(() => registerPlugin())
   .then(() => beforeInit())
   .then(() => init());
 
 async function beforeInit() {
   // 此处可设置自己的b站登录凭据，以解除b站未登录状态下返回打码弹幕的限制
   // b站的登录凭据可在cookie中获取，注意不要将cookie泄露给其他人
-  await floating.call("auth", "bilibili", "SESSDATA=xxxxxxxxxxxxxxxxxxxx");
-  console.log(floating.command.getSnapshot());
+  await floating.call(
+    "auth",
+    "bilibili",
+    "SESSDATA=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  );
 }
 
 function init() {

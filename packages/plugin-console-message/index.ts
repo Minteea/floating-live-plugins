@@ -1,20 +1,28 @@
 import {
-  FloatingLive,
-  Message,
-  PlatformInfo,
+  AppPluginExposesMap,
+  BasePlugin,
+  LiveMessage,
   UserInfo,
   UserType,
 } from "floating-live";
+import type {} from "@floating-live/platform";
 
-export class ConsoleMessage {
+export class ConsoleMessage extends BasePlugin {
   static pluginName = "consoleMessage";
-  readonly main: FloatingLive;
-  constructor(main: FloatingLive) {
-    this.main = main;
-    main.on("live:message", (msg) => {
-      this.log(msg);
+  private pluginPlatform?: AppPluginExposesMap["platform"];
+  init() {
+    this.ctx.whenRegister("platform", (platform) => {
+      this.pluginPlatform = platform;
+      return () => {
+        this.pluginPlatform = undefined;
+      };
+    });
+
+    this.ctx.on("live:message", ({ message }) => {
+      this.log(message);
     });
   }
+
   /** 获取用户信息 */
   public getUserInfo(message: { platform: string; info: { user: UserInfo } }) {
     let user = message.info.user; // 用户信息
@@ -38,16 +46,12 @@ export class ConsoleMessage {
   }
   /** 获取直播间会员名称 */
   public getMembershipName(platform: string, level: number | boolean) {
-    const membership = (
-      this.main.manifest.get("platform")?.get(platform) as PlatformInfo
-    )?.membership;
+    const membership = this.pluginPlatform?.get(platform)?.membership;
     return membership?.level?.[level as number] || membership?.name;
   }
   /** 获取货币名称 */
   public getCurrenyInfo(platform: string, name?: number | string) {
-    const currency = (
-      this.main.manifest.get("platform")?.get(platform) as PlatformInfo
-    )?.currency;
+    const currency = this.pluginPlatform?.get(platform)?.currency;
     return (
       currency?.[name || 0] || {
         name: "",
@@ -57,7 +61,7 @@ export class ConsoleMessage {
     );
   }
   /** 记录在控制台上 */
-  log(message: Message.All) {
+  log(message: LiveMessage.All) {
     switch (message.type) {
       case "comment": {
         let user = this.getUserInfo(message);

@@ -6,24 +6,17 @@ import {
   type LivePlatformInfo,
 } from "floating-live";
 import { RoomBilibili, RoomOptions } from "./room";
+import { checkLoginQRcode, qrcodeGenerate } from "./utils";
 import {
-  checkLoginQRcode,
-  qrcodeGenerate,
-  getBuvid,
-  getInfoByRoom,
+  requestGetInfoByRoom,
   getLoginUid,
-} from "./utils";
-import { parseInfo } from "./parser";
+  Cookies,
+} from "bilibili-live-danmaku";
+import { parseGetInfoByRoom } from "./parser";
 import type {} from "@floating-live/platform";
 
 interface BilibiliLoginInfo {
   credentials: string;
-  tokens: {
-    /** 用户uid */
-    userId: number;
-    /** buvid */
-    buvid: string;
-  };
   userId: number;
 }
 
@@ -87,22 +80,18 @@ export class PluginBilibili extends BasePlugin {
     ctx.registerCommand(
       "bilibili.room.data",
       async (e, id: string | number) => {
-        const rawInfo = await getInfoByRoom(parseInt("" + id));
-        return parseInfo(rawInfo);
+        const rawInfo = await requestGetInfoByRoom(parseInt("" + id));
+        return parseGetInfoByRoom(rawInfo);
       }
     );
 
     ctx.registerCommand(
       "bilibili.credentials.check",
       async (e, credentials) => {
-        const buvid = (await getBuvid({ cookie: credentials })) || "";
+        const buvid = new Cookies(credentials).get("buvid3");
         const userId = await getLoginUid({ cookie: credentials });
         return {
           credentials,
-          tokens: {
-            userId,
-            buvid,
-          },
           userId,
         };
       }

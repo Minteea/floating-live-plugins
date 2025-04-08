@@ -8,12 +8,13 @@
     "packages/*"
   ],
   "scripts": {
-    "tsc": "tsc -b"
+    "tsc": "tsc -b",
+    "demo": "tsx ./demo/demo.ts"
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.13",
     "@types/node": "^22.13.14",
-    "floating-live": "^0.16.0-alpha.15",
+    "floating-live": "^0.16.0-alpha.19",
     "lerna": "^7.3.0",
     "rimraf": "^3.0.2",
     "tsx": "^4.19.3",

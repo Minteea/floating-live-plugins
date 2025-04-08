@@ -1,22 +1,8 @@
-export {
-  getDid,
-  getGiftList,
-  getStartPlayInfo,
-  userLogin,
-  userSignIn,
-  visitorLogin,
-} from "acfun-live-danmaku/tools";
+import { customFetch, FetchOptions } from "acfun-live-danmaku";
 
-export function parseCookieString(str: string) {
-  const cookie: Record<string, string> = {};
-  str.split(";").forEach((item) => {
-    if (!item) {
-      return;
-    }
-    const arr = item.split("=");
-    const key = arr[0]?.trim();
-    const val = arr[1]?.trim();
-    cookie[key] = val;
-  });
-  return cookie;
+export function requestUserInfo(userId: number, options: FetchOptions) {
+  return customFetch(
+    options,
+    `https://live.acfun.cn/rest/pc-direct/user/userInfo?userId=${userId}`
+  ).then((response) => response.json());
 }

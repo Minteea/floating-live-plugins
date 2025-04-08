@@ -8,28 +8,63 @@ import {
   LiveRoomStatsInfo,
   LiveRoomData,
 } from "floating-live";
-import { AcClient } from "acfun-live-danmaku/client";
-import { ConnectTokens, RawMessage } from "./types";
 import {
-  getDid,
+  AcClient,
+  LiveInfo,
+  GiftList,
+  LoginInfo,
+  MessageData,
+  FetchOptions,
+  requestTokenGet,
+  ClientTokens,
+} from "acfun-live-danmaku";
+import {
+  requestDidCookie,
   getGiftList,
   getStartPlayInfo,
-  parseCookieString,
-  visitorLogin,
-} from "./utils";
-import { GiftList, LoginInfo } from "acfun-live-danmaku/types";
+  Cookies,
+  requestVisitorLogin,
+} from "acfun-live-danmaku";
 import { parseMessage } from "./parser";
+import { requestUserInfo } from "./utils";
 
+export interface ConnectTokens extends LoginInfo, LiveInfo {
+  did: string;
+}
 export interface RoomOptions {
+  /** 是否自动初始化(默认为true) */
+  init?: boolean;
+  /** 生成房间后是否立即打开 */
   open?: boolean;
   /** 登录凭据 */
   credentials?: string;
   /** 连接凭证 */
-  tokens?: ConnectTokens;
-  /** 房间信息 */
-  // info?: RoomInfo;
-  /** 礼物列表 */
-  // giftList?: GiftList;
+  tokens?: ConnectTokens | (LoginInfo & { did: string });
+
+  /** 预设置的房间数据，若设置，将不会自动更新直播间数据 */
+  data?: LiveRoomData;
+  /** 断线重连间隔(默认值为500ms) */
+  connectInterval?: number;
+  /** 连接超时阈值(默认值为45000ms) */
+  connectTimeout?: number;
+  /** 自动重连 */
+  autoReconnect?: boolean;
+
+  /** 自定义fetchData */
+  customFetchData?: (id: number | string) => Promise<LiveRoomData>;
+  /** 自定义fetchTokens */
+  customFetchTokens?: (id: number) => Promise<ConnectTokens>;
+  /** 自定义fetchGiftList */
+  customFetchGiftList?: (id: number) => Promise<GiftList>;
+
+  /** 自定义fetch函数 */
+  fetch?: (input: string | URL, init?: RequestInit) => Promise<Response>;
+}
+
+const symbolAbortController: unique symbol = Symbol("abortController");
+
+interface ClientWithAbortController extends AcClient {
+  [symbolAbortController]: AbortController;
 }
 
 export class RoomAcfun extends LiveRoom {
@@ -56,105 +91,150 @@ export class RoomAcfun extends LiveRoom {
   /** 主播信息 */
   public anchor: UserInfo = { name: "", id: 0 };
   /** 直播间弹幕api模块 */
-  public client: AcClient | null = null;
-  /** 是否为打开状态 */
-  public opened: boolean = false;
+  public client: ClientWithAbortController | null = null;
   /** 是否连接上服务器 */
   public connected: boolean = false;
 
-  private wsInit: boolean = false;
   /** 直播间是否可用 */
   public available: boolean = false;
-  /** 是否处于正在打开的状态 */
-  private opening: boolean = false;
+
   /** 是否处于重连状态 */
   private reconnecting: boolean = false;
+  /** 最后一次连接时间 */
+  private lastConnectionTime = 0;
 
-  private tokens: ConnectTokens = {
-    did: "",
-    userId: 0,
-    st: "",
-    security: "",
-    liveId: "",
-    availableTickets: [],
-    enterRoomAttach: "",
-  };
+  /** 断线重连间隔 */
+  public connectInterval: number;
+  /** 连接超时阈值 */
+  public connectTimeout: number;
+  /** 自动重连 */
+  public autoReconnect: boolean;
+
+  /** 是否初始化 */
+  public whenInit: Promise<RoomAcfun>;
+
+  /** 连接凭证 */
+  #tokens?: ConnectTokens | (LoginInfo & { did: string });
+  /** 用户cookie */
+  #cookies = new Cookies();
+  /** 用户代理 */
+  userAgent?: string;
 
   public giftList?: GiftList;
 
-  constructor(id: number, options?: RoomOptions) {
+  /** 自定义fetchData */
+  customFetchData?: (
+    id: number | string
+  ) => Promise<
+    LiveRoomData & { availableTickets: string[]; enterRoomAttach: string }
+  >;
+  /** 自定义fetchTokens */
+  customFetchTokens?: (id: number) => Promise<ConnectTokens>;
+  /** 自定义fetchGiftList */
+  customFetchGiftList?: (id: number) => Promise<GiftList>;
+
+  /** 自定义fetch函数 */
+  fetch: (
+    input: RequestInfo | URL,
+    init?: RequestInit | undefined
+  ) => Promise<Response> = fetch;
+
+  constructor(id: number, options: RoomOptions = {}) {
     super();
     this.id = id; // 直播间号
+    this.connectInterval = options.connectInterval ?? 500;
+    this.connectTimeout = options.connectTimeout ?? 45000;
+    this.autoReconnect = options.autoReconnect ?? false;
+
+    this.#tokens = options.tokens;
+    this.#cookies = new Cookies<any>(options.credentials);
     this.anchor.id = id; // 主播uid
-    this.init(options);
-  }
-  protected async init(options: RoomOptions = {}) {
-    const { tokens, credentials, open } = options;
-    if (open) this.opening = true;
-    if (!(tokens?.userId && tokens.security && tokens.st && tokens.did)) {
-      Object.assign(
-        this.tokens,
-        await this.fetchLoginTokens(credentials || "")
-      );
+    options.data && this.setData(options.data);
+
+    const init = options.init ?? true;
+    if (init) {
+      this.whenInit = this.init(options).then(() => this);
     } else {
-      Object.assign(this.tokens, tokens);
+      this.whenInit = new Promise((res) => res(this));
     }
-    await this.getInfo();
+  }
+  /** 初始化 */
+  protected async init(options: RoomOptions = {}) {
+    const { tokens, open, data } = options;
+    if (open) this.openStatus = 1;
+
+    // 设置必要 cookie
+    // 如果cookie中没有_did字段，会自动获取一个
+    await this.setCredentials(this.#cookies.toString(), false);
+
+    // 自动更新用户 tokens
+    if (!tokens) await this.updateUserTokens();
+
+    // 自动更新房间信息
+    if (
+      !(
+        data &&
+        (tokens as ConnectTokens)?.liveId &&
+        (tokens as ConnectTokens).availableTickets &&
+        (tokens as ConnectTokens).enterRoomAttach
+      )
+    ) {
+      const { availableTickets, enterRoomAttach } = await this.update();
+      this.#tokens = Object.assign({}, this.#tokens, {
+        availableTickets,
+        enterRoomAttach,
+      });
+    }
+
+    // 自动获取礼物列表
     this.giftList = await this.fetchGiftList();
+
     if (open) {
-      this.opening = false;
-      this.openWS();
+      this.openWebsocketClient();
     }
     this.emit("init");
   }
-  public async getInfo() {
-    await this.fetchInfo()
-      .then((info) => {
-        const tokens = {
-          liveId: info.liveId!,
-          availableTickets: info.availableTickets,
-          enterRoomAttach: info.enterRoomAttach,
-        };
-        if (this.opening) {
-          this.liveId = info.liveId;
-          Object.assign(this.tokens, tokens);
-        }
-        this.updateInfo(info);
-        return info;
-      })
-      .catch((error) => {
-        this.emit("info_error", error);
-      });
+
+  public async update() {
+    const info = await this.fetchData();
+    if (this.openStatus == 1) {
+      this.liveId = info.liveId;
+    }
+    this.setData(info);
+    return info;
   }
-  async fetchInfo(): Promise<
+
+  async fetchData(): Promise<
     LiveRoomData & { availableTickets: string[]; enterRoomAttach: string }
   > {
+    if (this.customFetchData) return this.customFetchData(this.id);
     const id = this.id;
-    const { did, userId, st } = { ...this.tokens };
+    const { did, userId, st } = { ...(this.#tokens as ConnectTokens) };
+    const isVisitor = userId >= 1000000000000000;
     const {
       liveId,
       caption,
       liveStartTime,
       availableTickets,
       enterRoomAttach,
-    } = await getStartPlayInfo({
-      authorId: id,
-      userId: userId,
-      did: did,
-      st: st,
-    }).catch(() => ({
+    } = await getStartPlayInfo(
+      {
+        authorId: id,
+        userId: userId,
+        did: did,
+        "acfun.midground.api_st": !isVisitor ? st : undefined,
+        "acfun.api.visitor_st": isVisitor ? st : undefined,
+      },
+      this.#getFetchOptions()
+    ).catch(() => ({
       liveId: "",
       caption: "",
       liveStartTime: 0,
       availableTickets: [] as string[],
       enterRoomAttach: "",
     }));
-    const { profile } = await fetch(
-      `https://live.acfun.cn/rest/pc-direct/user/userInfo?userId=${this.id}`,
-      {
-        method: "GET",
-      }
-    ).then((response) => response.json());
+    const { profile } = await requestUserInfo(this.id, this.#getFetchOptions());
+
     return {
       platform: "acfun",
       id: id,
@@ -174,18 +254,24 @@ export class RoomAcfun extends LiveRoom {
       status: liveId ? LiveRoomStatus.live : LiveRoomStatus.off,
       timestamp: liveStartTime,
       available: !!enterRoomAttach,
-      connection: 0,
+      connectionStatus: 0,
+      openStatus: 0,
       opened: false,
       availableTickets,
       enterRoomAttach,
     };
   }
+
   async fetchGiftList() {
-    return getGiftList({ ...this.tokens, authorId: this.id }).catch(() => []);
+    if (this.customFetchGiftList) return this.customFetchGiftList(this.id);
+    return getGiftList(
+      { ...(this.#tokens as ConnectTokens), authorId: this.id },
+      this.#getFetchOptions()
+    ).catch(() => []);
   }
 
   /** 更新直播间信息 */
-  updateInfo({
+  setData({
     status,
     timestamp,
     detail,
@@ -201,95 +287,141 @@ export class RoomAcfun extends LiveRoom {
     this.anchor = anchor;
     this.liveId = liveId;
     this.available = available;
-    this.emit("info", this.info);
+    const data = this.toData();
+    this.emit("update", { room: data });
+    return data;
   }
 
   /** 开启直播间监听 */
   public async open() {
     // 如果直播间监听已打开或处于正在打开状态，则返回
-    if (this.opened || this.opening) return;
-    this.opening = true;
-    await this.getInfo();
-    this.opening = false;
-    this.openWS();
+    if (this.openStatus) return;
+    this.openStatus = 1;
+    await this.update();
+    this.openWebsocketClient();
   }
 
   /** 设置登录凭据 */
-  async setCredentials(credentials: string, userToken?: ConnectTokens) {
-    const cookie = parseCookieString(credentials);
-    const did = userToken?.did || cookie._did || (await getDid());
-    let st = userToken?.st;
-    let userId = userToken?.userId;
-    let security = userToken?.security;
-    if (!(st && userId && security)) {
-      const loginInfo = await this.fetchLoginTokens(credentials);
-      st = loginInfo.st;
-      userId = loginInfo.userId;
-      security = loginInfo.security;
+  async setCredentials(credentials: string, updateTokens = true) {
+    const cookies = new Cookies<"_did">(credentials);
+    if (!cookies.has("_did")) {
+      cookies.append(
+        await requestDidCookie({
+          ...this.#getFetchOptions(),
+          cookie: cookies.toString(),
+        })
+      );
     }
-    const tokens: ConnectTokens = {
+    this.#cookies = cookies;
+    if (updateTokens) this.updateTokens();
+  }
+  /** 更新用户tokens */
+  async updateUserTokens() {
+    this.setTokens(await this.fetchUserTokens(this.#cookies.toString()));
+  }
+
+  /** 更新连接tokens */
+  async updateTokens() {
+    this.setTokens(await this.fetchTokens(this.#cookies.toString()));
+  }
+
+  /** 获取用户tokens */
+  async fetchUserTokens(credentials: string = "") {
+    const cookies = new Cookies<"_did" | "acPasstoken" | "auth_key">(
+      credentials
+    );
+    const did = cookies.get("_did");
+    const acPasstoken = cookies.get("acPasstoken");
+    const auth_key = cookies.get("auth_key");
+
+    // 如果存在 acPasstoken 和 auth_key，按登录模式获取token
+    if (acPasstoken && auth_key) {
+      const {
+        "acfun.midground.api_st": st,
+        userId,
+        ssecurity: security,
+      } = await requestTokenGet({ cookie: cookies.toString() });
+      return { did, st, userId, security };
+    } else {
+      // 否则，按游客模式获取token
+      const {
+        "acfun.api.visitor_st": st,
+        userId,
+        acSecurity: security,
+      } = await requestVisitorLogin({ cookie: cookies.toString() });
+      return { did, st, userId, security };
+    }
+  }
+
+  /** 获取tokens */
+  async fetchTokens(credentials: string = ""): Promise<ConnectTokens> {
+    const { did, st, userId, security } = await this.fetchUserTokens(
+      credentials
+    );
+    const isVisitor = userId >= 1000000000000000;
+    const { availableTickets, enterRoomAttach, liveId } =
+      await getStartPlayInfo(
+        {
+          did,
+          userId,
+          authorId: this.id,
+          "acfun.midground.api_st": !isVisitor ? st : undefined,
+          "acfun.api.visitor_st": isVisitor ? st : undefined,
+        },
+        { ...this.#getFetchOptions(), cookie: credentials }
+      );
+    return {
       did,
       st,
       userId,
       security,
-      liveId: "",
-      availableTickets: [],
-      enterRoomAttach: "",
-    };
-    this.tokens = tokens;
-
-    const info = await this.fetchInfo();
-    const { liveId, availableTickets, enterRoomAttach } = info;
-
-    this.setTokens({
-      ...tokens,
-      liveId: liveId!,
       availableTickets,
       enterRoomAttach,
-    });
-  }
-
-  /** 获取登录token */
-  async fetchLoginTokens(credentials: string) {
-    const cookie = parseCookieString(credentials);
-    const did = cookie._did || (await getDid());
-    // const acPasstoken = cookie["acPasstoken"];
-    // const authKey = cookie["auth_key"];
-    const { st, userId, security } = await visitorLogin(did);
-    return { did, st, userId, security };
+      liveId,
+    };
   }
 
   /** 重连 */
   /** 设置直播连接token */
-  setTokens(tokens: ConnectTokens) {
-    this.tokens = tokens;
+  setTokens(tokens: ConnectTokens | (LoginInfo & { did: string })) {
+    this.#tokens = tokens;
     if (this.opened) {
       // 如果已打开，则重连
       this.reconnect();
     }
   }
   reconnect() {
+    // 如果正在重连，则返回
     if (this.reconnecting) return;
     this.reconnecting = true;
     const lastClient = this.client;
     if (!lastClient) return;
     this.initClient();
-    this.client?.once("open", () => {
-      lastClient.removeAllListeners();
-      lastClient.close();
-      this.reconnecting = false;
-    });
+    // 重连成功后，关闭上一个连接
+    this.client?.addEventListener(
+      "open",
+      () => {
+        lastClient[symbolAbortController].abort();
+        lastClient.close();
+        this.reconnecting = false;
+      },
+      { once: true }
+    );
   }
 
-  private openWS() {
+  /** 打开直播弹幕客户端 */
+  private openWebsocketClient() {
     // 如果直播间不可用，则返回
-    if (!this.available) return;
+    if (!this.available) {
+      this.openStatus = 0;
+      return;
+    }
     this.initClient();
-    this.opened = true;
+    this.openStatus = 2;
     this.emit("open");
   }
   private emitConnention(status: LiveConnectionStatus) {
-    this.connection = status;
+    this.connectionStatus = status;
     switch (status) {
       case LiveConnectionStatus.connecting:
         this.emit("connecting");
@@ -307,61 +439,108 @@ export class RoomAcfun extends LiveRoom {
   }
   /** 初始化直播服务端监听 */
   private async initClient() {
-    if (this.client) return;
     this.emitConnention(LiveConnectionStatus.connecting);
+    // 与Websocket服务器连接
+    const client = new AcClient(
+      this.#tokens as ClientTokens
+    ) as ClientWithAbortController;
 
-    const client = new AcClient(this.tokens);
+    const controller = new AbortController();
+    const signal = controller.signal;
+    client[symbolAbortController] = controller;
 
-    client.on("open", () => {
-      this.emitConnention(LiveConnectionStatus.connected);
-    });
+    client.addEventListener(
+      "open",
+      () => {
+        this.emitConnention(LiveConnectionStatus.connected);
+      },
+      { signal }
+    );
+    client.addEventListener(
+      "close",
+      () => {
+        // 断开连接
+        this.opened && this.emitConnention(LiveConnectionStatus.disconnected);
+        // 自动重连
+        if (this.opened && this.autoReconnect) {
+          const timeout =
+            this.lastConnectionTime + this.connectInterval - Date.now();
+          if (timeout > 0) {
+            const t = setTimeout(() => {
+              this.reconnect();
+              clearTimeout(t);
+            }, timeout);
+          } else {
+            this.reconnect();
+          }
+        }
+      },
+      { signal }
+    );
 
-    client.on("EnterRoomAck", () => {
-      this.emitConnention(LiveConnectionStatus.entered);
-    });
+    client.addEventListener(
+      "EnterRoomAck",
+      () => {
+        this.emitConnention(LiveConnectionStatus.entered);
+      },
+      { signal }
+    );
 
-    client.on("StateSignal", (signalType: string, payload: any) => {
-      const msg = parseMessage(signalType as any, payload, this);
-      msg && this.emitMessage(msg);
-      this.emitRaw({
-        messageType: "ZtLiveScStateSignal",
-        payload: {
-          signalType,
-          payload,
-        },
-      } satisfies RawMessage.ZtLiveScMessage<RawMessage.ZtLiveStateSignalItem>);
-    });
-    client.on("ActionSignal", (signalType: string, payload: any) => {
-      const msg = parseMessage(signalType as any, payload, this, this.giftList);
-      msg && this.emitMessage(msg);
-      this.emitRaw({
-        messageType: "ZtLiveScActionSignal",
-        payload: { signalType, payload },
-      } satisfies RawMessage.ZtLiveScMessage<RawMessage.ZtLiveActionSignalItem>);
-    });
-    client.on("NotifySignal", (signalType: string, payload: any) => {
-      const msg = parseMessage(signalType as any, payload, this);
-      msg && this.emitMessage(msg);
-      this.emitRaw({
-        messageType: "ZtLiveScNotifySignal",
-        payload: { signalType, payload },
-      } satisfies RawMessage.ZtLiveScMessage<RawMessage.ZtLiveNotifySignalItem>);
-    });
-    client.on("StatusChanged", (data: RawMessage.ZtLiveScStatusChanged) => {
-      const msg = parseMessage("ZtLiveScStatusChanged", data, this);
-      msg && this.emitMessage(msg);
-      this.emitRaw({
-        messageType: "ZtLiveScStatusChanged",
-        payload: data,
-      } satisfies RawMessage.ZtLiveScMessage<RawMessage.ZtLiveScStatusChanged>);
-    });
+    client.addEventListener(
+      "StateSignal",
+      (e) => {
+        const { signalType, data } = e;
+        const msg = parseMessage(signalType as any, data, this);
+        msg && this.emitMessage(msg);
+        this.emitRaw({ ...e });
+      },
+      { signal }
+    );
+    client.addEventListener(
+      "ActionSignal",
+      (e) => {
+        const { signalType, data } = e;
+        const msg = parseMessage(signalType as any, data, this, this.giftList);
+        msg && this.emitMessage(msg);
+        this.emitRaw({ ...e });
+      },
+      { signal }
+    );
+    client.addEventListener(
+      "NotifySignal",
+      (e) => {
+        const { signalType, data } = e;
+        const msg = parseMessage(signalType as any, data, this);
+        msg && this.emitMessage(msg);
+        this.emitRaw({ ...e });
+      },
+      { signal }
+    );
+    client.addEventListener(
+      "StatusChanged",
+      (e) => {
+        const { data } = e;
+        const msg = parseMessage("ZtLiveScStatusChanged", data, this);
+        msg && this.emitMessage(msg);
+        this.emitRaw({ ...e });
+      },
+      { signal }
+    );
     this.client = client;
-    this.wsInit = true;
   }
+
+  #getFetchOptions(): FetchOptions {
+    return {
+      fetch: this.fetch,
+      userAgent: this.userAgent,
+      cookie: this.#cookies.toString(),
+    };
+  }
+
   /** 关闭直播间监听 */
   close() {
     if (!this.opened) return;
-    this.opened = false;
+    this.openStatus = 0;
     this.client?.wsClose();
     this.emitConnention(LiveConnectionStatus.off);
     this.emit("close");

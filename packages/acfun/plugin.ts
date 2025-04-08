@@ -6,24 +6,18 @@ import {
 } from "floating-live";
 import { RoomAcfun } from "./room";
 import {
-  getDid,
+  requestDidCookie,
   getStartPlayInfo,
-  parseCookieString,
-  userLogin,
-  visitorLogin,
-} from "./utils";
+  requestTokenGet,
+  requestVisitorLogin,
+  Cookies,
+} from "acfun-live-danmaku";
 import type {} from "@floating-live/platform";
 
 declare module "floating-live" {
   interface AppCommandMap {
     "acfun.credentials.check": (credentials: string) => Promise<{
       credentials: string;
-      tokens: {
-        did: string;
-        userId: number;
-        st: string;
-        security: string;
-      };
       userId: number;
     }>;
   }
@@ -62,17 +56,22 @@ export class PluginAcfun extends BasePlugin {
     ctx.registerCommand(
       "acfun.room.create",
       (e, id: string | number, config?: object) => {
-        return new RoomAcfun(Number(id), config);
+        const room = new RoomAcfun(Number(id), config);
+        room.whenInit.catch((e) => console.error(e));
+        return room;
       }
     );
 
     ctx.registerCommand("acfun.room.data", async (e, id: string | number) => {
       if (!this.tokens) {
-        const did = await getDid();
-        const { userId, st } = await visitorLogin(did);
+        const cookies = new Cookies(await requestDidCookie());
+        const { userId, "acfun.api.visitor_st": st } =
+          await requestVisitorLogin({
+            cookie: cookies.toString(),
+          });
         this.tokens = {
           userId,
-          did,
+          did: cookies.get("_did"),
           st,
         };
       }
@@ -83,7 +82,7 @@ export class PluginAcfun extends BasePlugin {
           authorId,
           userId: userId,
           did: did,
-          st: st,
+          "acfun.api.visitor_st": st,
         }).catch(() => ({
           liveId: "",
           caption: "",
@@ -116,36 +115,56 @@ export class PluginAcfun extends BasePlugin {
         status: liveId ? LiveRoomStatus.live : LiveRoomStatus.off,
         timestamp: liveStartTime,
         available: !!enterRoomAttach,
-        connection: 0,
+        connectionStatus: 0,
+        openStatus: 0,
         opened: false,
       };
     });
 
-    ctx.registerCommand("acfun.credentials.check", async (e, credentials) => {
-      const cookie = parseCookieString(credentials);
-      const did = cookie._did || (await getDid());
-      const acPasstoken = cookie["acPasstoken"];
-      const authKey = cookie["auth_key"];
-      if (acPasstoken && authKey) {
-        const result = await userLogin(did, acPasstoken, authKey).catch(
-          () => undefined
-        );
-        if (result) {
-          const { st, userId, security } = result;
-          return {
-            credentials,
-            tokens: { did, st, userId, security },
-            userId,
-          };
-        }
-      }
-      const { st, userId, security } = await visitorLogin(did);
+    ctx.registerCommand("acfun.credentials.check", (e, credentials) =>
+      this.checkCredentials(credentials)
+    );
+  }
+  async checkCredentials(credentials: string) {
+    let cookies = new Cookies<"_did" | "acPasstoken" | "auth_key">(credentials);
+
+    // 若没有_did信息，则重置cookie
+    if (!cookies.get("_did")) {
+      cookies = new Cookies(
+        (await requestDidCookie().catch((e) =>
+          this.throw(
+            new this.Error("credentials:check_failed", {
+              message: "无法获取必要cookie信息",
+              cause: e,
+            })
+          )
+        ))!
+      );
+    }
+
+    // 如果有acPasstoken和authKey，代表用户已经登录
+    if (cookies.has("acPasstoken") && cookies.has("auth_key")) {
+      const result = await requestTokenGet({
+        cookie: cookies.toString(),
+      }).catch((e) =>
+        this.throw(
+          new this.Error("credentials:check_failed", {
+            message: "获取token失败(登录模式)",
+            cause: e,
+          })
+        )
+      );
+      const { userId } = result!;
       return {
-        credentials: cookie._did ? credentials : `_did=${did}`,
-        tokens: { did, st, userId, security },
+        credentials: cookies.toString(),
+        userId,
+      };
+    } else {
+      return {
+        credentials: cookies.toString(),
         userId: 0,
       };
-    });
+    }
   }
 }
 

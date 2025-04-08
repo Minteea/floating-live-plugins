@@ -1,8 +1,20 @@
-import { UserType, ImageSize, LiveRoomStatus } from "floating-live";
-import { ImageInfo, LiveMessage, LiveRoomData } from "floating-live";
+import {
+  UserType,
+  ImageSize,
+  LiveRoomStatus,
+  ImageInfo,
+  LiveMessage,
+  LiveRoomData,
+  LiveRoomDetailInfo,
+  UserInfo,
+  LiveRoomStatsInfo,
+} from "floating-live";
+import {} from "floating-live";
 // import { generateId } from "floating-live";
-import { BilibiliRoomData, RawInfo, RawMessage } from "./types";
-type ParsingFunction<T extends RawMessage.All> = {
+import { BilibiliRoomData, RoomBaseInfo } from "./types";
+
+import { MessageData, ResponseData } from "bilibili-live-danmaku";
+type ParsingFunction<T extends MessageData.All> = {
   [K in T["cmd"]]: (
     msg: any,
     room?: LiveRoomData
@@ -18,8 +30,8 @@ function getDateTimestamp() {
   return Math.floor(Date.now() / 1000) * 1000;
 }
 
-const parsingFunction: ParsingFunction<RawMessage.All> = {
-  DANMU_MSG: (msg: RawMessage.DANMU_MSG, room) => {
+const parsingFunction: ParsingFunction<MessageData.All> = {
+  DANMU_MSG: (msg: MessageData.DANMU_MSG, room) => {
     const { info, msg_id } = msg;
     let content = info[1];
     let mode = info[0][1];
@@ -92,7 +104,7 @@ const parsingFunction: ParsingFunction<RawMessage.All> = {
     danmaku.id ??= generateId(danmaku);
     return danmaku;
   },
-  INTERACT_WORD: (msg: RawMessage.INTERACT_WORD, room) => {
+  INTERACT_WORD: (msg: MessageData.INTERACT_WORD, room) => {
     const { data, msg_id, send_time } = msg;
     let type: "entry" | "follow" | "share";
     switch (data.msg_type) {
@@ -133,7 +145,7 @@ const parsingFunction: ParsingFunction<RawMessage.All> = {
     interact.id ??= generateId(interact);
     return interact;
   },
-  SEND_GIFT: (msg: RawMessage.SEND_GIFT, room) => {
+  SEND_GIFT: (msg: MessageData.SEND_GIFT, room) => {
     const { data, msg_id, send_time } = msg;
     let gift: LiveMessage.Gift = {
       platform: "bilibili",
@@ -172,7 +184,7 @@ const parsingFunction: ParsingFunction<RawMessage.All> = {
     gift.id ??= generateId(gift);
     return gift;
   },
-  GUARD_BUY: (msg: RawMessage.GUARD_BUY, room) => {
+  GUARD_BUY: (msg: MessageData.GUARD_BUY, room) => {
     const { data, msg_id, send_time } = msg;
     let gift: LiveMessage.Membership = {
       platform: "bilibili",
@@ -202,7 +214,7 @@ const parsingFunction: ParsingFunction<RawMessage.All> = {
     gift.id ??= generateId(gift);
     return gift;
   },
-  SUPER_CHAT_MESSAGE: (msg: RawMessage.SUPER_CHAT_MESSAGE, room) => {
+  SUPER_CHAT_MESSAGE: (msg: MessageData.SUPER_CHAT_MESSAGE, room) => {
     const { data, msg_id, send_time } = msg;
     let sc: LiveMessage.Superchat = {
       platform: "bilibili",
@@ -243,7 +255,7 @@ const parsingFunction: ParsingFunction<RawMessage.All> = {
     sc.id ??= generateId(sc);
     return sc;
   },
-  WATCHED_CHANGE: (msg: RawMessage.WATCHED_CHANGE, room) => {
+  WATCHED_CHANGE: (msg: MessageData.WATCHED_CHANGE, room) => {
     const { data, msg_id, send_time } = msg;
     const stats: LiveMessage.LiveStats = {
       platform: "bilibili",
@@ -259,7 +271,7 @@ const parsingFunction: ParsingFunction<RawMessage.All> = {
     stats.id ??= generateId(stats);
     return stats;
   },
-  LIKE_INFO_V3_UPDATE: (msg: RawMessage.LIKE_INFO_V3_UPDATE, room) => {
+  LIKE_INFO_V3_UPDATE: (msg: MessageData.LIKE_INFO_V3_UPDATE, room) => {
     const { data, msg_id, send_time } = msg;
     const stats: LiveMessage.LiveStats = {
       platform: "bilibili",
@@ -275,7 +287,7 @@ const parsingFunction: ParsingFunction<RawMessage.All> = {
     stats.id ??= generateId(stats);
     return stats;
   },
-  ONLINE_RANK_COUNT: (msg: RawMessage.ONLINE_RANK_COUNT, room) => {
+  ONLINE_RANK_COUNT: (msg: MessageData.ONLINE_RANK_COUNT, room) => {
     const { data, msg_id, send_time } = msg;
     if (data.online_count == null) return;
     const stats: LiveMessage.LiveStats = {
@@ -292,7 +304,7 @@ const parsingFunction: ParsingFunction<RawMessage.All> = {
     stats.id ??= generateId(stats);
     return stats;
   },
-  ROOM_BLOCK_MSG: (msg: RawMessage.ROOM_BLOCK_MSG, room) => {
+  ROOM_BLOCK_MSG: (msg: MessageData.ROOM_BLOCK_MSG, room) => {
     const { data, msg_id, send_time } = msg;
     const block: LiveMessage.Block = {
       platform: "bilibili",
@@ -314,7 +326,7 @@ const parsingFunction: ParsingFunction<RawMessage.All> = {
     block.id ??= generateId(block);
     return block;
   },
-  LIVE: (msg: RawMessage.LIVE, room) => {
+  LIVE: (msg: MessageData.LIVE, room) => {
     const { msg_id, send_time } = msg;
     // 直播间开播
     if (msg.live_time) {
@@ -333,7 +345,7 @@ const parsingFunction: ParsingFunction<RawMessage.All> = {
       return live;
     }
   },
-  CUT_OFF: (msg: RawMessage.CUT_OFF, room) => {
+  CUT_OFF: (msg: MessageData.CUT_OFF, room) => {
     const { msg_id, send_time } = msg;
     // 直播间被切断
     let cut: LiveMessage.LiveCut = {
@@ -350,7 +362,7 @@ const parsingFunction: ParsingFunction<RawMessage.All> = {
     cut.id ??= generateId(cut);
     return cut;
   },
-  PREPARING: (msg: RawMessage.PREPARING, room) => {
+  PREPARING: (msg: MessageData.PREPARING, room) => {
     const { msg_id, send_time } = msg;
     let off: LiveMessage.LiveEnd = {
       platform: "bilibili",
@@ -366,7 +378,7 @@ const parsingFunction: ParsingFunction<RawMessage.All> = {
     off.id ??= generateId(off);
     return off;
   },
-  ROOM_CHANGE: (msg: RawMessage.ROOM_CHANGE, room) => {
+  ROOM_CHANGE: (msg: MessageData.ROOM_CHANGE, room) => {
     const { data, msg_id, send_time } = msg;
     let change: LiveMessage.LiveDetail = {
       platform: "bilibili",
@@ -383,7 +395,7 @@ const parsingFunction: ParsingFunction<RawMessage.All> = {
     change.id ??= generateId(change);
     return change;
   },
-  ANCHOR_LOT_START: (msg: RawMessage.ANCHOR_LOT_START, room) => {
+  ANCHOR_LOT_START: (msg: MessageData.ANCHOR_LOT_START, room) => {
     const { data, msg_id, send_time } = msg;
     let m: LiveMessage.Lottery = {
       platform: "bilibili",
@@ -410,15 +422,22 @@ const parsingFunction: ParsingFunction<RawMessage.All> = {
 
 /** 转换bilibili直播弹幕为floating通用格式 */
 export function parseMessage(
-  data: RawMessage.All,
+  data: MessageData.All,
   room?: BilibiliRoomData
 ): LiveMessage.All | undefined {
   return parsingFunction[data.cmd]?.(data, room);
 }
 
 /** 转换bilibili直播间信息为floating通用格式 */
-export function parseInfo(data: RawInfo): BilibiliRoomData {
-  const { room_info, anchor_info, like_info_v3, watched_show }: RawInfo = data;
+export function parseGetInfoByRoom(
+  data: ResponseData.GetInfoByRoom
+): BilibiliRoomData {
+  const {
+    room_info,
+    anchor_info,
+    like_info_v3,
+    watched_show,
+  }: ResponseData.GetInfoByRoom = data;
   return {
     platform: "bilibili",
     id: room_info.room_id,
@@ -448,7 +467,57 @@ export function parseInfo(data: RawInfo): BilibiliRoomData {
       room_info.live_status == LiveRoomStatus.live
         ? room_info.live_start_time * 1000
         : 0,
+    openStatus: 0,
     opened: false,
-    connection: 0,
+    connectionStatus: 0,
   };
+}
+
+/** 转换bilibili直播间信息为floating通用格式 */
+export function parseRoomBaseInfo(data: RoomBaseInfo): BilibiliRoomData {
+  return {
+    platform: "bilibili",
+    id: data.room_id,
+    roomId: data.room_id,
+    shortId: data.short_id,
+    key: `bilibili:${data.room_id}`,
+    detail: {
+      title: data.title,
+      area: [data.parent_area_name, data.area_name],
+      cover: data.cover,
+    },
+    anchor: {
+      id: data.uid,
+      name: data.uname,
+    },
+    stats: {},
+    liveId: data.live_id_str,
+    available: data.lock_status ? false : true,
+    status: data.lock_status
+      ? LiveRoomStatus.banned
+      : (data.live_status as LiveRoomStatus),
+    timestamp:
+      data.live_status == LiveRoomStatus.live
+        ? new Date(`${data.live_time} GMT+0800`).getTime() * 1000
+        : 0,
+    openStatus: 0,
+    opened: false,
+    connectionStatus: 0,
+  };
+}
+
+export function mergeLiveRoomData<T extends LiveRoomData>(
+  ...list: Partial<T>[]
+): T {
+  const room: Partial<LiveRoomData> = Object.assign({}, ...list);
+  const detail: LiveRoomDetailInfo = Object.assign(
+    {},
+    ...list.map((d) => d.detail)
+  );
+  const anchor: UserInfo = Object.assign({}, ...list.map((d) => d.anchor));
+  const stats: LiveRoomStatsInfo = Object.assign(
+    {},
+    ...list.map((d) => d.stats)
+  );
+  return { ...room, detail, anchor, stats } as T;
 }

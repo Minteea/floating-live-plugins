@@ -1,9 +1,4 @@
-import {
-  AppPluginExposesMap,
-  BasePlugin,
-  FloatingLive,
-  ValueContext,
-} from "floating-live";
+import { AppPluginExposesMap, BasePlugin, ValueContext } from "floating-live";
 
 declare module "floating-live" {
   interface AppCommandMap {

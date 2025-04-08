@@ -7,7 +7,7 @@ import {
   UserInfo,
   UserType,
 } from "floating-live";
-import { GiftList, RawMessage } from "./types";
+import { GiftList, MessageData } from "acfun-live-danmaku";
 
 // utils
 const generateId = (m: LiveMessage.All) =>
@@ -26,14 +26,14 @@ type ParsingFunction = {
 };
 
 interface MessageTypes {
-  CommonActionSignalComment: RawMessage.CommonActionSignalComment;
-  CommonActionSignalGift: RawMessage.CommonActionSignalGift;
-  CommonActionSignalUserEnterRoom: RawMessage.CommonActionSignalUserEnterRoom;
-  CommonActionSignalUserFollowAuthor: RawMessage.CommonActionSignalUserFollowAuthor;
-  CommonActionSignalLike: RawMessage.CommonActionSignalLike;
-  AcfunActionSignalJoinClub: RawMessage.AcfunActionSignalJoinClub;
-  CommonStateSignalDisplayInfo: RawMessage.CommonStateSignalDisplayInfo;
-  ZtLiveScStatusChanged: RawMessage.ZtLiveScStatusChanged;
+  CommonActionSignalComment: MessageData.CommonActionSignalComment;
+  CommonActionSignalGift: MessageData.CommonActionSignalGift;
+  CommonActionSignalUserEnterRoom: MessageData.CommonActionSignalUserEnterRoom;
+  CommonActionSignalUserFollowAuthor: MessageData.CommonActionSignalUserFollowAuthor;
+  CommonActionSignalLike: MessageData.CommonActionSignalLike;
+  AcfunActionSignalJoinClub: MessageData.AcfunActionSignalJoinClub;
+  CommonStateSignalDisplayInfo: MessageData.CommonStateSignalDisplayInfo;
+  ZtLiveScStatusChanged: MessageData.ZtLiveScStatusChanged;
 }
 
 /** 获取当前时间戳，以替代无法从数据中获取时间戳的情况，精度为1s */
@@ -57,7 +57,7 @@ const parsingFunction: ParsingFunction = {
       roomId: room?.id || 0,
       userId: 0,
       id: "",
-      timestamp: parseInt(data.sendTimeMs),
+      timestamp: Number(data.sendTimeMs),
       type: "comment",
       info: {
         content: data.content,
@@ -75,7 +75,7 @@ const parsingFunction: ParsingFunction = {
       userId: 0,
       id: "",
       type: "gift",
-      timestamp: parseInt(data.sendTimeMs),
+      timestamp: Number(data.sendTimeMs),
       info: {
         user: getUserInfo(data.userInfo),
         gift: getGiftInfo(data, giftList),
@@ -92,7 +92,7 @@ const parsingFunction: ParsingFunction = {
       userId: 0,
       type: "entry",
       id: "",
-      timestamp: parseInt(data.sendTimeMs),
+      timestamp: Number(data.sendTimeMs),
       info: {
         user: getUserInfo(data.userInfo),
       },
@@ -108,7 +108,7 @@ const parsingFunction: ParsingFunction = {
       userId: 0,
       type: "follow",
       id: "",
-      timestamp: parseInt(data.sendTimeMs),
+      timestamp: Number(data.sendTimeMs),
       info: {
         user: getUserInfo(data.userInfo),
       },
@@ -124,7 +124,7 @@ const parsingFunction: ParsingFunction = {
       userId: 0,
       type: "like",
       id: "",
-      timestamp: parseInt(data.sendTimeMs),
+      timestamp: Number(data.sendTimeMs),
       info: {
         user: getUserInfo(data.userInfo),
       },
@@ -140,10 +140,10 @@ const parsingFunction: ParsingFunction = {
       userId: 0,
       type: "join",
       id: "",
-      timestamp: parseInt(data.joinTimeMs),
+      timestamp: Number(data.joinTimeMs),
       info: {
         user: {
-          id: parseInt(data.fansInfo.userId || "") || 0,
+          id: Number(data.fansInfo.userId || 0) || 0,
           name: data.fansInfo.name || "",
         },
       },
@@ -178,7 +178,7 @@ const parsingFunction: ParsingFunction = {
     };
     let msg: LiveMessage.LiveEnd | LiveMessage.LiveCut;
     switch (data.type) {
-      case RawMessage.StatusChangedType.LIVE_CLOSED:
+      case MessageData.StatusChangedType.LIVE_CLOSED:
         msg = {
           ...base,
           type: "live_end",
@@ -187,7 +187,7 @@ const parsingFunction: ParsingFunction = {
           },
         };
         break;
-      case RawMessage.StatusChangedType.LIVE_BANNED:
+      case MessageData.StatusChangedType.LIVE_BANNED:
         msg = {
           ...base,
           type: "live_cut",
@@ -219,18 +219,18 @@ function getMedalInfo(badge?: string): MedalInfo | null {
 }
 
 function getUserInfo(
-  user: RawMessage.ZtLiveUserInfo,
+  user: MessageData.ZtLiveUserInfo,
   anchorId?: number
 ): UserInfo {
   let identity: UserType | null = 0;
   if (user.userIdentity?.managerType == 1) {
     identity = UserType.admin;
-  } else if (parseInt(user.userId) == anchorId) {
+  } else if (Number(user.userId) == anchorId) {
     identity = UserType.anchor;
   }
   return {
     name: user.nickname,
-    id: parseInt(user.userId),
+    id: Number(user.userId),
     medal: getMedalInfo(user.badge),
     avatar: user.avatar[0].url,
     type: identity,
@@ -238,7 +238,7 @@ function getUserInfo(
 }
 
 function getGiftInfo(
-  gift: RawMessage.CommonActionSignalGift,
+  gift: MessageData.CommonActionSignalGift,
   giftList?: GiftList
 ): GiftInfo {
   const { giftId, batchSize, comboKey, rank } = gift;

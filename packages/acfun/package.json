@@ -17,10 +17,11 @@
     "acfun-live-danmaku": "^0.8.0-alpha.4"
   },
   "devDependencies": {
+    "@floating-live/platform": "^0.16.0",
     "@types/websocket": "^1.0.5",
     "@types/ws": "^8.5.3",
     "rimraf": "^3.0.2",
-    "typescript": "^4.8.4"
+    "typescript": "^5.8.3"
   },
   "peerDependencies": {
     "floating-live": "^0.16.0"

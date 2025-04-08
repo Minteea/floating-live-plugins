@@ -230,8 +230,7 @@ __metadata:
     "@floating-live/platform": "npm:^0.16.0"
     "@types/websocket": "npm:^1.0.5"
     "@types/ws": "npm:^8.5.3"
-    bilibili-live-danmaku: "npm:^0.7.0-alpha.5"
-    bilibili-live-ws: "npm:^6.3.1"
+    bilibili-live-danmaku: "npm:^0.7.0-alpha.6"
     rimraf: "npm:^3.0.2"
     typescript: "npm:^5.8.3"
   peerDependencies:
@@ -1265,13 +1264,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"array-flat-polyfill@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "array-flat-polyfill@npm:1.0.1"
-  checksum: 10c0/3336cb1fc9a1c79a12a3f5f3294fddbf06e31b9ca655e93e9a0287fc80cf4e894757710a9883e0b180398874a0a8980b5f66f19220971bf2b1c4214b79098556
-  languageName: node
-  linkType: hard
-
 "array-ify@npm:^1.0.0":
   version: 1.0.0
   resolution: "array-ify@npm:1.0.0"
@@ -1346,27 +1338,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bilibili-live-danmaku@npm:^0.7.0-alpha.5":
-  version: 0.7.0-alpha.5
-  resolution: "bilibili-live-danmaku@npm:0.7.0-alpha.5"
+"bilibili-live-danmaku@npm:^0.7.0-alpha.6":
+  version: 0.7.0-alpha.6
+  resolution: "bilibili-live-danmaku@npm:0.7.0-alpha.6"
   dependencies:
     pako: "npm:^2.1.0"
-  checksum: 10c0/56b8e3279e7610d115fc9ea4e87bd00b9bb4bff21300c8dd39c59b37e1b337971d6b99e7e5b4e7f88eb257a21870b4b30dc931f760913221a2b22cb16f8934d6
-  languageName: node
-  linkType: hard
-
-"bilibili-live-ws@npm:^6.3.1":
-  version: 6.3.1
-  resolution: "bilibili-live-ws@npm:6.3.1"
-  dependencies:
-    array-flat-polyfill: "npm:^1.0.1"
-    isomorphic-ws: "npm:^5.0.0"
-    ws: "npm:^8.2.3"
-  peerDependencies:
-    buffer: ^6.0.3
-    events: ^3.3.0
-    pako: ^2.0.4
-  checksum: 10c0/828d57147be2ba42818874cf1c372ee49001e2dd88bad4d2d037cf3650820223c5cc881415b55a2abbf87d3a4d1b97a8c37227b9890eda1a5510e67545b9e7b9
+  checksum: 10c0/5f4972eac06f29b291925bbb78903fc4a643044b5c87ad531730c42fe3b8bd5648ad3ac747fbd3f98f663aa5c953ec78e94f3ef18a5106241b7aed7c841f88ff
   languageName: node
   linkType: hard
 
@@ -3220,15 +3197,6 @@ __metadata:
   version: 3.0.1
   resolution: "isobject@npm:3.0.1"
   checksum: 10c0/03344f5064a82f099a0cd1a8a407f4c0d20b7b8485e8e816c39f249e9416b06c322e8dec5b842b6bb8a06de0af9cb48e7bc1b5352f0fadc2f0abac033db3d4db
-  languageName: node
-  linkType: hard
-
-"isomorphic-ws@npm:^5.0.0":
-  version: 5.0.0
-  resolution: "isomorphic-ws@npm:5.0.0"
-  peerDependencies:
-    ws: "*"
-  checksum: 10c0/a058ac8b5e6efe9e46252cb0bc67fd325005d7216451d1a51238bc62d7da8486f828ef017df54ddf742e0fffcbe4b1bcc2a66cc115b027ed0180334cd18df252
   languageName: node
   linkType: hard
 
@@ -6040,21 +6008,6 @@ __metadata:
     type-fest: "npm:^0.4.1"
     write-json-file: "npm:^3.2.0"
   checksum: 10c0/8e20db5fa444dad04e3703c18d8e0f89679caa60accbee5da9ea3aa076430b3f32d99f50d8860d29044245775795455c62d12d16a7856d407e30df7b79f39505
-  languageName: node
-  linkType: hard
-
-"ws@npm:^8.2.3":
-  version: 8.16.0
-  resolution: "ws@npm:8.16.0"
-  peerDependencies:
-    bufferutil: ^4.0.1
-    utf-8-validate: ">=5.0.2"
-  peerDependenciesMeta:
-    bufferutil:
-      optional: true
-    utf-8-validate:
-      optional: true
-  checksum: 10c0/a7783bb421c648b1e622b423409cb2a58ac5839521d2f689e84bc9dc41d59379c692dd405b15a997ea1d4c0c2e5314ad707332d0c558f15232d2bc07c0b4618a
   languageName: node
   linkType: hard
 

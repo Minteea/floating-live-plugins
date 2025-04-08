@@ -8,14 +8,13 @@
   "license": "MIT",
   "scripts": {
     "check": "tsc --noEmit",
-    "clear": "rimraf *.js *.d.ts --glob",
+    "clear": "rimraf **/*.js **/*.d.ts --glob",
     "build": "npm run clear && tsc --build",
     "prepack": "npm run build",
     "postpack": "npm run clear"
   },
   "dependencies": {
-    "bilibili-live-danmaku": "^0.7.0-alpha.5",
-    "bilibili-live-ws": "^6.3.1"
+    "bilibili-live-danmaku": "^0.7.0-alpha.6"
   },
   "devDependencies": {
     "@floating-live/platform": "^0.16.0",

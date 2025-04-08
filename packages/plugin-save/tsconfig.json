@@ -1,14 +1,15 @@
 {
   "compilerOptions": {
     "target": "es2020",
-    "lib": ["es2020"],
+    "lib": ["es2020", "DOM"],
     "module": "ESNext",
     "noImplicitAny": true,
     "declaration": true,
     "moduleResolution": "bundler",
     "esModuleInterop": true,
     "strict": true,
-    "rootDir": "."
+    "rootDir": ".",
+    "skipLibCheck": true
   },
   "files": ["index.ts"]
 }

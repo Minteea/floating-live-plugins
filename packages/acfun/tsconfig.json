@@ -8,7 +8,8 @@
     "moduleResolution": "bundler",
     "esModuleInterop": true,
     "strict": true,
-    "rootDir": "."
+    "rootDir": ".",
+    "skipLibCheck": true
   },
   "files": ["index.ts"]
 }

@@ -9,7 +9,7 @@
   "scripts": {
     "check": "tsc --noEmit",
     "clear": "rimraf *.js *.d.ts --glob",
-    "build": "npm run clear && tsc --build",
+    "build": "npm run clear && tsc --build && tsc-alias",
     "prepack": "npm run build",
     "postpack": "npm run clear"
   },

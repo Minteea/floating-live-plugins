@@ -327,14 +327,11 @@ export class RoomBilibili extends LiveRoom implements BilibiliRoomData {
       key: this.#tokens?.key,
     }) as ClientWithAbortController;
 
-    console.log(this.#tokens);
-
     const controller = new AbortController();
     const signal = controller.signal;
     client[symbolAbortController] = controller;
 
     this.lastConnectionTime = Date.now();
-    console.log(client.ws.url);
     client.addEventListener(
       "open",
       () => {

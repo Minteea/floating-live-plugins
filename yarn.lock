@@ -357,7 +357,7 @@ __metadata:
     "@types/fs-extra": "npm:^9.0.13"
     "@types/node": "npm:^22.13.14"
     dotenv: "npm:^16.5.0"
-    floating-live: "npm:^0.16.0"
+    floating-live: "npm:^0.16.1"
     lerna: "npm:^8.2.2"
     rimraf: "npm:^3.0.2"
     tsc-alias: "npm:^1.8.16"
@@ -2566,10 +2566,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"floating-live@npm:^0.16.0":
-  version: 0.16.0
-  resolution: "floating-live@npm:0.16.0"
-  checksum: 10c0/0be3622099f93799a865b93643e80480eb8c974bfd480b8481aff31964a0b156ab3dbc29eaaf4b7fa8104f01b98ebe60e63b6e388532b3ed3e720b4e52a854c2
+"floating-live@npm:^0.16.1":
+  version: 0.16.1
+  resolution: "floating-live@npm:0.16.1"
+  checksum: 10c0/69892ec7593fcaa1caee957941759485254d8160e583522693b9880265feaf15a306c8cb263c4bb5fd598ae33f56a083a89661eecad299683999e2b40270ff60
   languageName: node
   linkType: hard
 

@@ -244,7 +244,7 @@ __metadata:
     "@floating-live/platform": "npm:^0.16.2"
     "@types/websocket": "npm:^1.0.5"
     "@types/ws": "npm:^8.5.3"
-    acfun-live-danmaku: "npm:^0.8.0-beta.0"
+    acfun-live-danmaku: "npm:^0.8.0"
     rimraf: "npm:^3.0.2"
     tsc-alias: "npm:^1.8.16"
     typescript: "npm:^5.8.3"
@@ -262,7 +262,7 @@ __metadata:
     "@types/md5": "npm:^2.3.0"
     "@types/websocket": "npm:^1.0.5"
     "@types/ws": "npm:^8.5.3"
-    bilibili-live-danmaku: "npm:^0.7.3"
+    bilibili-live-danmaku: "npm:^0.7.4"
     md5: "npm:^2.3.0"
     rimraf: "npm:^3.0.2"
     tsc-alias: "npm:^1.8.16"
@@ -1270,15 +1270,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"acfun-live-danmaku@npm:^0.8.0-beta.0":
-  version: 0.8.0-beta.0
-  resolution: "acfun-live-danmaku@npm:0.8.0-beta.0"
+"acfun-live-danmaku@npm:^0.8.0":
+  version: 0.8.0
+  resolution: "acfun-live-danmaku@npm:0.8.0"
   dependencies:
     "@floating-live/cookies": "npm:^0.1.0"
     long: "npm:^5.3.1"
     pako: "npm:^2.1.0"
     protobufjs: "npm:^7.4.0"
-  checksum: 10c0/c19801873fe6c85c196e596ddeb03575f2a4e20d4a079412c22707e1be55e906a445251f887353ef47054bcedd43da66ef67f2e313d0dfe83a1f8e40098c6fed
+  checksum: 10c0/c2064f84cef2609271f4512e50766960f1433f05ac3573a4b52be4d7097b92122c43732bab71fb0fa8dff007708ba7b3fda80a38a8eea3c903260fd1f16e0d56
   languageName: node
   linkType: hard
 
@@ -1484,14 +1484,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bilibili-live-danmaku@npm:^0.7.3":
-  version: 0.7.3
-  resolution: "bilibili-live-danmaku@npm:0.7.3"
+"bilibili-live-danmaku@npm:^0.7.4":
+  version: 0.7.4
+  resolution: "bilibili-live-danmaku@npm:0.7.4"
   dependencies:
     "@floating-live/cookies": "npm:^0.1.0"
     md5: "npm:^2.3.0"
     pako: "npm:^2.1.0"
-  checksum: 10c0/633e51ea72717a50bd680f37891209ffc3f6ba5054cd7d5b638670ba71a3b9cb723f51f9f86b5a13d295cb4f584331f9e81fd37a59fb63dda5122363b922f625
+  checksum: 10c0/70925b16a773b015b52b31f77a5867acd33247ba434c72bddca32efb7383411d615f1832ad4ff798ba4fa06d951a1e3ff67707880c56ef1ac05dac12abcab56f
   languageName: node
   linkType: hard
 

@@ -440,10 +440,12 @@ export class RoomAcfun extends LiveRoom {
   /** 初始化直播服务端监听 */
   private async initClient() {
     this.emitConnention(LiveConnectionStatus.connecting);
+
     // 与Websocket服务器连接
-    const client = new AcClient(
-      this.#tokens as ClientTokens
-    ) as ClientWithAbortController;
+    const client = new AcClient({
+      ...this.#tokens,
+      liveId: this.liveId,
+    } as ClientTokens) as ClientWithAbortController;
 
     const controller = new AbortController();
     const signal = controller.signal;

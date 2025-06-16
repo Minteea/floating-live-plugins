@@ -1,250 +1,288 @@
 import {
-  Cookies,
-  customFetch,
-  requestBuvidCookie,
-  ResponseData,
+  assertRequestOk,
+  BilibiliApiClient,
+  unwrapRequestData,
 } from "bilibili-live-danmaku";
-import {
-  fpGet,
-  FpInfo,
-  generateFakeFpInfo,
-  getExClimbWuzhiPayload,
-} from "./fingerprint";
-import { generateRandomPngBase64 } from "./randomImage";
-import { x64hash128 } from "./fp2";
-import { generateUuid } from "./uuid";
-import { generateLsid } from "./lsid";
-import { RoomBaseInfo } from "../types";
+import { parseGetInfoByRoom, parseRoomBaseInfo } from "../parser";
+import { getCorrespondPath } from "./crypto";
 
-export function getCookie(headers: Headers) {
-  const cookies: string[] = [];
-  headers.forEach((val, key) => {
-    if (key == "set-cookie") {
-      const [c] = val.split(";");
-      cookies.push(c);
-    }
-  });
-  const cookie = cookies.join("; ");
-  return cookie;
+export interface DataXpassportQrcodeGenerate {
+  url: string;
+  qrcode_key: string;
+}
+export interface DataXpassportQrcodePoll {
+  url: string;
+  refresh_token: string;
+
+  /** 登录时间 */
+  timestamp: number;
+
+  /** 扫码状态
+   * > 0：扫码登录成功
+   * > 86038：二维码已失效
+   * > 86090：二维码已扫码未确认
+   * > 86101：未扫码
+   */
+  code: number;
+
+  /** 扫码状态信息 */
+  message: string;
 }
 
-export function parseCookieString(str: string) {
-  const cookie: Record<string, string> = {};
-  str.split(";").forEach((item) => {
-    if (!item) {
-      return;
-    }
-    const arr = item.split("=");
-    const key = arr[0]?.trim();
-    const val = arr[1]?.trim();
-    cookie[key] = val;
-  });
-  return cookie;
-}
-
-/** 生成登录二维码 */
-export async function qrcodeGenerate(options?: FetchOptions) {
-  const res = await customFetch(
-    options,
-    "https://passport.bilibili.com/x/passport-login/web/qrcode/generate"
-  ).then((res) => res.json());
-  return {
-    url: res.data.url,
-    key: res.data.qrcode_key,
+export interface DataXapiNav {
+  isLogin: boolean;
+  email_verified: number;
+  face: string;
+  face_nft: number;
+  face_nft_type: number;
+  level_info: {
+    current_level: number;
+    current_min: number;
+    current_exp: number;
+    next_exp: string;
   };
+  mid: number;
+  mobile_verified: number;
+  money: number;
+  moral: number;
+  official: { role: number; title: string; desc: string; type: number };
+  officialVerify: { type: number; desc: string };
+  pendant: {
+    pid: number;
+    name: string;
+    image: string;
+    expire: number;
+    image_enhance: string;
+    image_enhance_frame: string;
+    n_pid: number;
+  };
+  scores: number;
+  uname: string;
+  vipDueDate: number;
+  vipStatus: number;
+  vipType: number;
+  vip_pay_type: number;
+  vip_theme_type: number;
+  vip_label: {
+    path: string;
+    text: number;
+    label_theme: string;
+    text_color: string;
+    bg_style: number;
+    bg_color: string;
+    border_color: string;
+    use_img_label: boolean;
+    img_label_uri_hans: string;
+    img_label_uri_hant: string;
+    img_label_uri_hans_static: string;
+    img_label_uri_hant_static: string;
+    label_id: number;
+    label_goto: {
+      mobile: string;
+      pc_web: string;
+    };
+  };
+  vip_avatar_subscript: number;
+  vip_nickname_color: string;
+  vip: {
+    type: number;
+    status: number;
+    due_date: number;
+    vip_pay_type: number;
+    theme_type: number;
+    label: {
+      path: string;
+      text: string;
+      label_theme: string;
+      text_color: string;
+      bg_style: number;
+      bg_color: string;
+      border_color: string;
+      use_img_label: boolean;
+      img_label_uri_hans: string;
+      img_label_uri_hant: string;
+      img_label_uri_hans_static: string;
+      img_label_uri_hant_static: string;
+      label_id: number;
+      label_goto: {
+        mobile: string;
+        pc_web: string;
+      };
+    };
+    avatar_subscript: number;
+    nickname_color: string;
+    role: number;
+    avatar_subscript_url: string;
+    tv_vip_status: number;
+    tv_vip_pay_type: number;
+    tv_due_date: number;
+    avatar_icon: { icon_type: number; icon_resource: {} };
+  };
+  wallet: {
+    mid: number;
+    bcoin_balance: number;
+    coupon_balance: number;
+    coupon_due_time: number;
+  };
+  has_shop: boolean;
+  shop_url: "";
+  answer_status: number;
+  is_senior_member: number;
+  wbi_img: {
+    img_url: string;
+    sub_url: string;
+  };
+  is_jury: boolean;
+  name_render: null;
 }
 
-/** 生成登录二维码 */
-export async function requestFingerSpi(
-  options?: FetchOptions
-): Promise<Record<"b_3" | "b_4", string>> {
-  const res = await customFetch(
-    options,
-    "https://api.bilibili.com/x/frontend/finger/spi"
-  ).then((res) => res.json());
-  return res.data;
+export interface DataXpassportCookieInfo {
+  refresh: boolean;
+  timestamp: number;
 }
-/** 检测登录二维码 */
-export async function checkLoginQRcode(
-  key: string,
-  options?: FetchOptions
-): Promise<[number, string?]> {
-  const res = await customFetch(
-    options,
-    `https://passport.bilibili.com/x/passport-login/web/qrcode/poll?qrcode_key=${key}`
-  );
-  const { code, message } = (await res.json()).data;
-  if (code == 86101) {
-    // 未扫码
-    return [1];
-  } else if (code == 86090) {
-    // 等待确认
-    return [2];
-  } else if (code == 0) {
-    const cookie = getCookie(res.headers);
-    return [0, cookie];
-  } else if (code == 86038) {
-    // 二维码失效
-    return [-1];
-  } else {
-    // 其他错误
-    console.log(`${code} ${message}`);
-    throw message;
+
+export interface DataXpassportCookieRefresh {
+  status: number;
+  message: string;
+  refresh_token: string;
+}
+
+export class BilibiliApiClientEx extends BilibiliApiClient {
+  /** 生成登录二维码 */
+  async xpassportQrcodeGenerate() {
+    const res = await this.request(
+      "https://passport.bilibili.com/x/passport-login/web/qrcode/generate"
+    );
+    return unwrapRequestData<DataXpassportQrcodeGenerate>(res);
   }
-}
 
-function wait(t: number) {
-  return new Promise((res, rej) => {
-    const to = setTimeout(() => {
-      res(undefined);
-      clearTimeout(t);
-    }, t);
-  });
-}
-
-/** 获取并激活buvid的cookie */
-export async function getActivatedBuvidCookie(
-  fp: FpInfo | null | undefined,
-  options: FetchOptions
-) {
-  const cookies = new Cookies<
-    "buvid3" | "buvid4" | "_uuid" | "buvid_fp" | "b_lsid"
-  >();
-  cookies.append(
-    await requestBuvidCookie({
-      ...options,
-      cookie: cookies.toString(),
-    })
-  );
-
-  const { b_4 } = await requestFingerSpi({
-    ...options,
-    cookie: cookies.toString(),
-  });
-  cookies.set("buvid4", b_4);
-
-  if (!fp) {
-    fp = generateFakeFpInfo({
-      canvas: generateRandomPngBase64(),
-      webgl: generateRandomPngBase64(),
-      userAgent:
-        options.userAgent ||
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36 Edg/135.0.0.0",
-      platform: "Win32",
-    });
+  /** 轮询登录二维码 */
+  async xpassportQrcodePoll(params: { qrcode_key: string }) {
+    const url = new URL(
+      "https://passport.bilibili.com/x/passport-login/web/qrcode/poll"
+    );
+    url.searchParams.set("qrcode_key", params.qrcode_key);
+    const res = await this.request(
+      "https://passport.bilibili.com/x/passport-login/web/qrcode/generate"
+    );
+    const data = unwrapRequestData<DataXpassportQrcodePoll>(res);
+    this.cookies.setFromHeaders(res.headers);
+    return data;
   }
-  cookies.append(
-    getFingerprintCookie(fp, {
-      ...options,
-      cookie: cookies.toString(),
-    })
-  );
-  // await wait(2000);
-  const payload = getExClimbWuzhiPayload(fp, {
-    uuid: cookies.get("_uuid"),
-    timestamp: Date.now().toString(),
-    browser_resolution: fpGet(fp, "availableScreenResolution").join("x"),
-    abtest: `{"b_ut":null,"home_version":"V8","in_new_ab":true,"ab_version":{"for_ai_home_version":"V8","enable_web_push":"DISABLE","ad_style_version":"NEW","enable_feed_channel":"ENABLE","enable_ai_floor_api":"DISABLE"},"ab_split_num":{"for_ai_home_version":54,"enable_web_push":10,"ad_style_version":54,"enable_feed_channel":54,"enable_ai_floor_api":137},"uniq_page_id":"${Math.floor(
-      Math.random() * 2000000000000
-    )}","is_modern":true}`,
-  });
 
-  requestExClimbWuzhi(JSON.stringify(payload), {
-    ...options,
-    cookie: cookies.toString(),
-  });
-  const cookieRecord: Record<string, string> = {};
-  cookies.forEach((val, k) => {
-    cookieRecord[k] = val;
-  });
-  return cookieRecord as Record<
-    "buvid3" | "_uuid" | "buvid_fp" | "b_lsid",
-    string
-  >;
-}
-
-/** 获取指纹相关Cookies */
-export function getFingerprintCookie(fp: FpInfo, options: FetchOptions) {
-  const cookies = new Cookies<"_uuid" | "buvid_fp" | "b_lsid">(options.cookie);
-  let _uuid = cookies.get("_uuid");
-  let buvid_fp = cookies.get("buvid_fp");
-  let b_lsid = cookies.get("b_lsid");
-
-  if (!_uuid) {
-    _uuid = generateUuid();
-    cookies.set("_uuid", _uuid);
+  /** 获取当前登录信息 */
+  async xapiNav() {
+    const res = await this.request(
+      "https://api.bilibili.com/x/web-interface/nav"
+    );
+    return unwrapRequestData<DataXapiNav>(res);
   }
-  if (!buvid_fp) {
-    const fpString = fp
-      .map((e) => {
-        return e.value;
+
+  async xpassportCookieInfo() {
+    const res = await this.request(
+      "https://passport.bilibili.com/x/passport-login/web/cookie/info"
+    );
+    return unwrapRequestData<DataXpassportCookieInfo>(res);
+  }
+
+  async wwwCorrespond(correspondPath: string) {
+    const res = await this.request(
+      `https://www.bilibili.com/correspond/1/${correspondPath}`
+    );
+    assertRequestOk(res);
+    return res;
+  }
+
+  async xpassportCookieRefresh(params: {
+    csrf: string;
+    refresh_csrf: string;
+    source?: string;
+    refresh_token: string;
+  }) {
+    const url = new URL(
+      "https://passport.bilibili.com/x/passport-login/web/cookie/refresh"
+    );
+
+    url.searchParams.set("csrf", params.csrf);
+    url.searchParams.set("refresh_csrf", params.refresh_csrf);
+    url.searchParams.set("source", params.source || "main_web");
+    url.searchParams.set("refresh_token", params.refresh_token);
+    const res = await this.request(url);
+    const data = unwrapRequestData<DataXpassportCookieRefresh>(res);
+    this.cookies.setFromHeaders(res.headers);
+    return data;
+  }
+  async xpassportConfirmRefresh(params: {
+    csrf: string;
+    refresh_token: string;
+  }) {
+    const url = new URL(
+      "https://passport.bilibili.com/x/passport-login/web/confirm/refresh"
+    );
+    url.searchParams.set("csrf", params.csrf);
+    url.searchParams.set("refresh_token", params.refresh_token);
+    const res = await this.request(url);
+
+    return unwrapRequestData<unknown>(res);
+  }
+
+  async refreshCookie({
+    timestamp,
+    refresh_token,
+  }: {
+    timestamp: number;
+    refresh_token: string;
+  }) {
+    // 生成CorrespondPath
+    const correspondPath = await getCorrespondPath(timestamp);
+
+    // 获取refresh_csrf
+    const correspondRes = await this.wwwCorrespond(correspondPath);
+    const correspondHtmlText = await correspondRes.text();
+    const refresh_csrf = await correspondRefreshCsrf(correspondHtmlText);
+
+    // 刷新cookie
+    const { refresh_token: new_refresh_token } = (
+      await this.xpassportCookieRefresh({
+        csrf: this.cookies.get("bili_jct"),
+        refresh_csrf,
+        refresh_token,
       })
-      .join("");
-    buvid_fp = x64hash128(fpString, 31);
-    cookies.set("buvid_fp", buvid_fp);
-  }
-  if (!b_lsid) {
-    b_lsid = generateLsid();
-    cookies.set("b_lsid", b_lsid);
-  }
-  return {
-    _uuid,
-    buvid_fp,
-    b_lsid,
-  };
-}
+    ).data;
 
-/** 激活buvid */
-export function requestExClimbWuzhi(payload: string, options: FetchOptions) {
-  customFetch(
-    options,
-    "https://api.bilibili.com/x/internal/gaia-gateway/ExClimbWuzhi",
-    {
-      method: "POST",
-      body: payload,
-      credentials: "include",
-      headers: {
-        Accept: "*/*",
-        "Accept-Encoding": "gzip, deflate, br, zstd",
-        "Accept-Language": "zh-CN,zh;q=0.9",
-        "Content-Type": "application/json;charset=UTF-8",
-        Origin: "https://www.bilibili.com",
-        priority: "u=1, i",
-        Referer: "https://www.bilibili.com/",
-        "Sec-Ch-Ua": `"Microsoft Edge";v="135", "Not-A.Brand";v="8", "Chromium";v="135"`,
-        "Sec-Ch-Mobile": "?0",
-        "Sec-Ch-Platform": `"Windows"`,
-        "Sec-Ch-Dest": "empty",
-        "Sec-Ch-Mode": "cors",
-        "Sec-Fetch-Site": "same-site",
-      },
-    }
-  ).then((res) => res.json());
-}
-
-export function getRoomBaseInfo(room_id: number, options?: FetchOptions) {
-  return customFetch(
-    options,
-    `https://api.live.bilibili.com/xlive/web-room/v1/index/getRoomBaseInfo?room_ids=${room_id}&req_biz=video`
-  )
-    .then((res) => res.json())
-    .then(
-      (
-        data: ResponseData.Wrap<{ by_room_ids: Record<string, RoomBaseInfo> }>
-      ) => data.data
-    )
-    .then((data) => {
-      for (const k in data.by_room_ids) {
-        return data.by_room_ids[k];
-      }
+    // 确认更新
+    await this.xpassportConfirmRefresh({
+      csrf: this.cookies.get("bili_jct"),
+      refresh_token,
     });
+
+    return { cookie: this.cookie, refresh_token: new_refresh_token };
+  }
 }
 
-export interface FetchOptions {
-  /** 自定义fetch函数(适用于请求中转等情况) */
-  fetch?: (input: string, init?: RequestInit) => Promise<Response>;
-  /** 用户代理字段 */
-  userAgent?: string;
-  /** cookie字段 */
-  cookie?: string;
+const correspondRefreshCsrfRegex = /\<div id="1-name"\>([0-9a-zA-Z]+)\<\/div\>/;
+
+export async function correspondRefreshCsrf(html: string) {
+  const csrf = html.match(correspondRefreshCsrfRegex)?.[1];
+  if (!csrf) throw new Error("无法提取refresh_csrf");
+  return csrf;
+}
+
+export async function fetchLiveRoomData(client: BilibiliApiClient, id: number) {
+  try {
+    const res = await client.xliveGetInfoByRoom({
+      room_id: id,
+    });
+    return parseGetInfoByRoom(res.data);
+  } catch (e) {
+    // fallback
+
+    const res = await client.xliveGetRoomBaseInfo({
+      room_ids: [id],
+    });
+    for (const r in res.data.by_room_ids) {
+      return parseRoomBaseInfo(res.data.by_room_ids[r]);
+    }
+    throw new Error("房间不存在");
+  }
 }

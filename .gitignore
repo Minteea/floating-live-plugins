@@ -1,8 +1,7 @@
 # Saves
 saves/
 
-# Saves
-demo/test.ts
+**/.hidden/
 
 # Yarn
 .yarn/

@@ -1,35 +1,33 @@
-import { AppPluginExposesMap, BasePlugin, ValueContext } from "floating-live";
+import {
+  AppPluginExposesMap,
+  BasePlugin,
+  UserInfo,
+  ValueContext,
+} from "floating-live";
 
 declare module "floating-live" {
   interface AppCommandMap {
     auth: (platform: string, credentials: string) => Promise<void>;
-    "auth.set": (
-      platform: string,
-      credentials: string,
-      tokens?: Record<string, any>
-    ) => void;
+    "auth.set": (platform: string, credentials: string) => void;
     "auth.check": (
       platform: string,
       credentials: string
     ) => Promise<{
       credentials: string;
-      tokens?: Record<string, any>;
-      userId?: string | number;
+      isLogin: boolean;
+      user: UserInfo | null;
     } | void>;
-    [name: `${string}.credentials.check`]: (
-      credentials: string,
-      tokens?: Record<string, any>
-    ) => Promise<{
+    [name: `${string}.credentials.check`]: (credentials: string) => Promise<{
       credentials: string;
-      tokens?: Record<string, any>;
-      userId?: string | number;
+      isLogin: boolean;
+      user: UserInfo | null;
     }>;
   }
   interface AppEventDetailMap {
-    "auth:update": { platform: string; userId?: string | number };
+    "auth:update": { platform: string; user: UserInfo | null };
   }
   interface AppValueMap {
-    [name: `auth.userId.${string}`]: number | string | undefined;
+    [name: `auth.user.${string}`]: UserInfo | null;
   }
   interface LiveRoom {
     setCredentials?(credentials: string, tokens?: Record<string, any>): void;
@@ -42,11 +40,8 @@ export class Auth extends BasePlugin {
     string,
     { credentials: string; tokens?: Record<string, any> }
   >();
-  private authValueContext = new Map<
-    string,
-    ValueContext<string | number | undefined>
-  >();
-  private readonly info: Record<string, string | number | undefined> = {};
+  private authValueContext = new Map<string, ValueContext<UserInfo | null>>();
+  private readonly info: Record<string, UserInfo | null> = {};
   room: AppPluginExposesMap["room"] | null = null;
   init() {
     this.ctx.whenRegister("room", (room) => {
@@ -59,8 +54,8 @@ export class Auth extends BasePlugin {
     this.ctx.registerCommand("auth", (e, platform, credentials) => {
       return this.auth(platform, credentials);
     });
-    this.ctx.registerCommand("auth.set", (e, platform, credentials, tokens) => {
-      return this.set(platform, credentials, tokens);
+    this.ctx.registerCommand("auth.set", (e, platform, credentials) => {
+      return this.set(platform, credentials);
     });
     this.ctx.registerCommand("auth.check", (e, platform, credentials) => {
       return this.check(platform, credentials);
@@ -78,26 +73,26 @@ export class Auth extends BasePlugin {
   async auth(platform: string, credentials: string) {
     const result = await this.check(platform, credentials);
     if (result) {
-      this.set(platform, result.credentials, result.tokens);
-      this.setAuthInfo(platform, result.userId);
+      this.set(platform, result.credentials);
+      this.setAuthInfo(platform, result.user);
     }
   }
-  private setAuthInfo(platform: string, userId: number | string | undefined) {
-    this.info[platform] = userId;
-    this.ctx.emit("auth:update", { platform, userId });
-    if (!this.ctx.hasValue(`auth.userId.${platform}`)) {
-      const valueCtx = this.ctx.registerValue(`auth.userId.${platform}`, {
+  private setAuthInfo(platform: string, user: UserInfo | null) {
+    this.info[platform] = user;
+    this.ctx.emit("auth:update", { platform, user });
+    if (!this.ctx.hasValue(`auth.user.${platform}`)) {
+      const valueCtx = this.ctx.registerValue(`auth.user.${platform}`, {
         get: () => this.info[platform],
       });
       this.authValueContext.set(platform, valueCtx);
     } else {
-      this.authValueContext.get(platform)?.emit(userId);
+      this.authValueContext.get(platform)?.emit(user);
     }
   }
   /** 直接设置用户凭据 */
-  set(platform: string, credentials: string, tokens?: Record<string, any>) {
-    this.list.set(platform, { credentials, tokens });
-    this.update(platform, credentials, tokens);
+  set(platform: string, credentials: string) {
+    this.list.set(platform, { credentials });
+    this.update(platform, credentials);
   }
   /** 更新现有房间的用户凭据 */
   update(platform: string, credentials: string, tokens?: Record<string, any>) {

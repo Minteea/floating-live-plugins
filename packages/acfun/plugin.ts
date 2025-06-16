@@ -10,9 +10,9 @@ import {
   getStartPlayInfo,
   requestTokenGet,
   requestVisitorLogin,
-  Cookies,
 } from "acfun-live-danmaku";
 import type {} from "@floating-live/platform";
+import { Cookies } from "@floating-live/cookies";
 
 declare module "floating-live" {
   interface AppCommandMap {

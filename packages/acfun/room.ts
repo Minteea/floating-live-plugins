@@ -22,11 +22,11 @@ import {
   requestDidCookie,
   getGiftList,
   getStartPlayInfo,
-  Cookies,
   requestVisitorLogin,
 } from "acfun-live-danmaku";
 import { parseMessage } from "./parser";
 import { requestUserInfo } from "./utils";
+import { Cookies } from "@floating-live/cookies";
 
 export interface ConnectTokens extends LoginInfo, LiveInfo {
   did: string;

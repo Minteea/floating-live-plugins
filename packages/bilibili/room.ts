@@ -1,16 +1,6 @@
 import { BilibiliRoomData, ConnectTokens } from "./types";
-import {
-  LiveWS,
-  // requestGetInfoByRoom,
-  getLoginUid,
-  // getLiveConfig,
-  Cookies,
-  ResponseData,
-  customFetch,
-  requestBuvidCookie,
-} from "bilibili-live-danmaku";
+import { LiveWS, parseLiveConfig } from "bilibili-live-danmaku";
 import { parseGetInfoByRoom, parseMessage, parseRoomBaseInfo } from "./parser";
-import { FetchOptions, getRoomBaseInfo, parseCookieString } from "./utils";
 import {
   LiveConnectionStatus,
   UserInfo,
@@ -19,6 +9,7 @@ import {
   LiveRoom,
   LiveRoomOpenStatus,
 } from "floating-live";
+import { BilibiliApiClientEx } from "./utils/request";
 
 /** 配置项 */
 export interface RoomOptions {
@@ -32,6 +23,8 @@ export interface RoomOptions {
   credentials?: string;
   /** 连接凭证，若为空，则初始化时自动生成 */
   tokens?: ConnectTokens;
+  /** 用户代理，若为空，则使用默认值 */
+  userAgent?: string;
   /** 预设置的房间数据，若设置，将不会自动更新直播间数据 */
   data?: BilibiliRoomData;
   /** 断线重连间隔(默认值为500ms) */
@@ -97,9 +90,14 @@ export class RoomBilibili extends LiveRoom implements BilibiliRoomData {
   /** 连接凭证 */
   #tokens?: ConnectTokens;
   /** 用户cookie */
-  #cookies = new Cookies<"buvid3" | "DedeUserID">();
-  /** 用户代理 */
-  userAgent?: string;
+  #apiClient: BilibiliApiClientEx;
+
+  get userAgent() {
+    return this.#apiClient.userAgent;
+  }
+  set userAgent(ua: string) {
+    this.#apiClient.userAgent = ua;
+  }
 
   /** 是否处于重连状态 */
   private reconnecting: boolean = false;
@@ -114,12 +112,6 @@ export class RoomBilibili extends LiveRoom implements BilibiliRoomData {
     credentials: string
   ) => Promise<ConnectTokens>;
 
-  /** 自定义fetch函数 */
-  fetch: (
-    input: RequestInfo | URL,
-    init?: RequestInit | undefined
-  ) => Promise<Response> = fetch;
-
   constructor(
     /** 房间id */
     id: number,
@@ -131,7 +123,13 @@ export class RoomBilibili extends LiveRoom implements BilibiliRoomData {
     this.connectTimeout = options.connectTimeout ?? 45000;
     this.autoReconnect = options.autoReconnect ?? false;
     this.#tokens = options.tokens;
-    this.#cookies = new Cookies<any>(options.credentials);
+
+    this.#apiClient = new BilibiliApiClientEx({
+      userAgent: options.userAgent,
+      cookie: options.credentials,
+      fetch: options.fetch,
+    });
+
     options.data && this.setData(options.data);
 
     const init = options.init ?? true;
@@ -150,7 +148,7 @@ export class RoomBilibili extends LiveRoom implements BilibiliRoomData {
 
     // 设置必要 cookie
     // 如果cookie中没有buvid3字段，会自动获取一个
-    await this.setCredentials(this.#cookies.toString(), false);
+    await this.setCredentials(this.#apiClient.cookie, false);
 
     // 自动更新房间信息
     if (!data) await this.update();
@@ -175,18 +173,23 @@ export class RoomBilibili extends LiveRoom implements BilibiliRoomData {
   /** 获取房间信息 */
   async fetchData(): Promise<BilibiliRoomData> {
     if (this.customFetchData) return this.customFetchData(this.id);
-    const rawInfo = await requestGetInfoByRoom(
-      this.id,
-      this.#getFetchOptions()
-    );
-    if (rawInfo) {
-      return parseGetInfoByRoom(rawInfo);
-    } else {
+
+    try {
+      const res = await this.#apiClient.xliveGetInfoByRoom({
+        room_id: this.id,
+      });
+      return parseGetInfoByRoom(res.data);
+    } catch (e) {
       // fallback
-      const baseInfo = await getRoomBaseInfo(this.id, this.#getFetchOptions());
-      if (baseInfo) return parseRoomBaseInfo(baseInfo);
+
+      const res = await this.#apiClient.xliveGetRoomBaseInfo({
+        room_ids: [this.id],
+      });
+      for (const r in res.data.by_room_ids) {
+        return parseRoomBaseInfo(res.data.by_room_ids[r]);
+      }
+      throw new Error("房间不存在");
     }
-    throw new Error("获取房间信息失败");
   }
 
   /** 设置直播间数据 */
@@ -199,7 +202,6 @@ export class RoomBilibili extends LiveRoom implements BilibiliRoomData {
     stats,
     anchor,
     liveId,
-    openStatus,
     available,
   }: BilibiliRoomData) {
     this.roomId = roomId;
@@ -220,45 +222,38 @@ export class RoomBilibili extends LiveRoom implements BilibiliRoomData {
   public async open() {
     // 如果直播间监听已打开或处于正在打开状态，则返回
     if (this.openStatus) return;
-    this.openStatus = 1;
+    this.openStatus = LiveRoomOpenStatus.opening;
     await this.update();
     this.openWebsocketClient();
   }
 
   /** 设置登录凭据 */
   async setCredentials(credentials: string, updateTokens = true) {
-    const cookies = new Cookies<any>(credentials);
-    if (!cookies.has("buvid3")) {
-      cookies.append(
-        await requestBuvidCookie({
-          ...this.#getFetchOptions(),
-          cookie: cookies.toString(),
-        })
-      );
+    this.#apiClient.setCookie(credentials);
+    // 在没有buvid3的情况下，访问bilibili主页，获得buvid3
+    if (!this.#apiClient.cookies.has("buvid3")) {
+      this.#apiClient.wwwBilibili();
     }
-    this.#cookies = cookies;
     if (updateTokens) this.updateTokens();
   }
 
   /** 更新连接tokens */
   async updateTokens() {
-    this.setTokens(await this.fetchTokens(this.#cookies.toString()));
+    this.setTokens(await this.fetchTokens());
   }
 
   /** 请求连接tokens */
-  async fetchTokens(credentials: string = ""): Promise<ConnectTokens> {
+  async fetchTokens(): Promise<ConnectTokens> {
     if (this.customFetchTokens) {
-      return this.customFetchTokens(this.roomId, credentials);
+      return this.customFetchTokens(this.roomId, this.#apiClient.cookie);
     }
-    const cookies = new Cookies(credentials);
-    const buvid =
-      cookies.get("buvid3") ||
-      (await requestBuvidCookie(this.#getFetchOptions())).buvid3 ||
-      "";
-    const uid =
-      parseInt(cookies.get("DedeUserID")) ||
-      (await getLoginUid(this.#getFetchOptions()));
-    const key = (await getLiveConfig(this.roomId, this.#getFetchOptions())).key;
+    const buvid = this.#apiClient.cookies.get("buvid3");
+    const uid = parseInt(this.#apiClient.cookies.get("DedeUserID"));
+    const { key } = await parseLiveConfig(
+      (
+        await this.#apiClient.xliveGetDanmuInfo({ id: this.roomId })
+      ).data
+    );
     return {
       uid,
       buvid,
@@ -309,23 +304,16 @@ export class RoomBilibili extends LiveRoom implements BilibiliRoomData {
         break;
     }
   }
-  #getFetchOptions(): FetchOptions {
-    return {
-      fetch: this.fetch,
-      userAgent: this.userAgent,
-      cookie: this.#cookies.toString(),
-    };
-  }
 
   /** 打开直播弹幕客户端 */
   private openWebsocketClient() {
     // 如果直播间不可用，则返回
     if (!this.available) {
-      this.openStatus = 0;
+      this.openStatus = LiveRoomOpenStatus.closed;
       return;
     }
     this.initClient();
-    this.openStatus = 2;
+    this.openStatus = LiveRoomOpenStatus.opened;
     this.emit("open");
   }
 
@@ -339,12 +327,14 @@ export class RoomBilibili extends LiveRoom implements BilibiliRoomData {
       key: this.#tokens?.key,
     }) as ClientWithAbortController;
 
+    console.log(this.#tokens);
+
     const controller = new AbortController();
     const signal = controller.signal;
     client[symbolAbortController] = controller;
 
     this.lastConnectionTime = Date.now();
-
+    console.log(client.ws.url);
     client.addEventListener(
       "open",
       () => {
@@ -396,7 +386,7 @@ export class RoomBilibili extends LiveRoom implements BilibiliRoomData {
   /** 关闭直播间监听 */
   close() {
     if (!this.opened) return;
-    this.openStatus = 0;
+    this.openStatus = LiveRoomOpenStatus.closed;
     this.client?.close();
     this.emitConnention(LiveConnectionStatus.off);
     this.emit("close");
@@ -404,36 +394,3 @@ export class RoomBilibili extends LiveRoom implements BilibiliRoomData {
 }
 
 export default RoomBilibili;
-
-const DANMAKU_SERVER_CONF_URL =
-  "https://api.live.bilibili.com/xlive/web-room/v1/index/getDanmuInfo";
-const getLiveConfig = async (roomid: number, options?: FetchOptions) => {
-  const result = (await customFetch(
-    options,
-    `${DANMAKU_SERVER_CONF_URL}?id=${roomid}`
-  ).then((w) => w.json())) as ResponseData.Wrap<ResponseData.GetDanmuInfo>;
-  const {
-    data: {
-      token: key,
-      host_list: [{ host }],
-    },
-  } = result;
-  const address = `wss://${host}/sub`;
-  return { key, host, address, raw: result };
-};
-
-const ROOM_INIT_URL =
-  "https://api.live.bilibili.com/xlive/web-room/v1/index/getInfoByRoom";
-/** 获取房间信息 */
-export async function requestGetInfoByRoom(
-  id: number,
-  options?: FetchOptions
-): Promise<ResponseData.GetInfoByRoom> {
-  return await customFetch(options, `${ROOM_INIT_URL}?room_id=${id}`, {
-    method: "GET",
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      return data.data;
-    });
-}

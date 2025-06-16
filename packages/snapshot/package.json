@@ -1,5 +1,5 @@
 {
-  "name": "@floating-live/platform",
+  "name": "@floating-live/snapshot",
   "version": "0.16.0",
   "type": "module",
   "main": "index.js",

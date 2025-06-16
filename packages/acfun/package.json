@@ -14,7 +14,8 @@
     "postpack": "npm run clear"
   },
   "dependencies": {
-    "acfun-live-danmaku": "^0.8.0-alpha.4"
+    "@floating-live/cookies": "^0.1.0",
+    "acfun-live-danmaku": "^0.8.0-beta.0"
   },
   "devDependencies": {
     "@floating-live/platform": "^0.16.0",

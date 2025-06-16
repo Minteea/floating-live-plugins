@@ -3,12 +3,29 @@ import { BasePlugin, LivePlatformInfo } from "floating-live";
 interface PluginExposes {
   register(name: string, info: LivePlatformInfo, signal: AbortSignal): void;
   get(name: string): LivePlatformInfo | undefined;
-  toData(): { name: string }[];
+  toSnapshot(): { name: string }[];
 }
 
 declare module "floating-live" {
   interface AppPluginExposesMap {
     platform: PluginExposes;
+  }
+
+  interface AppEventDetailMap {
+    "platform:register": { name: string; info: LivePlatformInfo };
+    "platform:unregister": { name: string };
+  }
+  interface AppCommandMap {
+    "platform.snapshot": () => {
+      name: string;
+      info: LivePlatformInfo;
+    }[];
+  }
+  interface AppSnapshotMap {
+    platform: {
+      name: string;
+      info: LivePlatformInfo;
+    }[];
   }
 }
 
@@ -54,11 +71,11 @@ export class PluginPlatform extends BasePlugin {
         this.register(name, info, signal);
       },
       get: (name: string) => this.get(name),
-      toData: () => this.toData(),
+      toSnapshot: () => this.toSnapshot(),
     };
   }
 
-  toData() {
+  toSnapshot() {
     return [...this.list].map(([name, info]) => ({ name, info }));
   }
 }

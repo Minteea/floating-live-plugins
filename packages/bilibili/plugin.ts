@@ -1,34 +1,45 @@
 import {
+  AppPluginExposesMap,
   BasePlugin,
   PluginContext,
+  UserInfo,
   type CommandContext,
   type FloatingLive,
   type LivePlatformInfo,
 } from "floating-live";
 import { RoomBilibili, RoomOptions } from "./room";
-import { checkLoginQRcode, qrcodeGenerate } from "./utils";
-import {
-  requestGetInfoByRoom,
-  getLoginUid,
-  Cookies,
-} from "bilibili-live-danmaku";
-import { parseGetInfoByRoom } from "./parser";
 import type {} from "@floating-live/platform";
+import { BilibiliApiClientEx, fetchLiveRoomData } from "./utils/request";
+import { RequestError } from "bilibili-live-danmaku";
 
 interface BilibiliLoginInfo {
   credentials: string;
-  userId: number;
+  isLogin: boolean;
+  user: UserInfo | null;
 }
 
 declare module "floating-live" {
   interface AppCommandMap {
+    /** 检测并更新登录cookie有效性 */
     "bilibili.credentials.check": (
       credentials: string
     ) => Promise<BilibiliLoginInfo>;
+
+    /** 设置UA */
+    "bilibili.client.userAgent": (credentials: string) => string;
+
+    /** 使用cookie登录 */
+    "bilibili.credentials.set": (credentials: string) => string;
+
+    /** 获取二维码 */
     "bilibili.login.qrcode.get": () => Promise<{ key: string; url: string }>;
-    "bilibili.login.qrcode.poll": (
-      key: string
-    ) => Promise<{ status: number; credentials?: string }>;
+
+    /** 轮询二维码登录状态 */
+    "bilibili.login.qrcode.poll": (key: string) => Promise<{
+      status: number;
+      message?: string;
+      credentials?: string;
+    }>;
   }
 }
 
@@ -66,45 +77,148 @@ export interface PluginOptions {
 
 export class PluginBilibili extends BasePlugin {
   static pluginName = "bilibili";
+  apiClient = new BilibiliApiClientEx();
+  room: AppPluginExposesMap["room"] | null = null;
   init(ctx: PluginContext) {
     ctx.whenRegister("platform", (platform) => {
       platform.register("bilibili", platformInfo, ctx.signal);
+    });
+    ctx.whenRegister("room", (room) => {
+      this.room = room;
+      return () => {
+        this.room = null;
+      };
     });
 
     ctx.registerCommand(
       "bilibili.room.create",
       (e, id: string | number, options?: RoomOptions) => {
-        return new RoomBilibili(Number(id), options);
+        return new RoomBilibili(Number(id), {
+          credentials: this.apiClient.cookie,
+          userAgent: this.apiClient.userAgent,
+          fetch: this.apiClient.fetch,
+          ...options,
+        });
       }
     );
     ctx.registerCommand(
       "bilibili.room.data",
       async (e, id: string | number) => {
-        const rawInfo = await requestGetInfoByRoom(parseInt("" + id));
-        return parseGetInfoByRoom(rawInfo);
+        return await fetchLiveRoomData(this.apiClient, parseInt(id.toString()));
       }
     );
 
     ctx.registerCommand(
       "bilibili.credentials.check",
       async (e, credentials) => {
-        const buvid = new Cookies(credentials).get("buvid3");
-        const userId = await getLoginUid({ cookie: credentials });
-        return {
-          credentials,
-          userId,
-        };
+        const apiClient = new BilibiliApiClientEx({
+          cookie: credentials,
+          userAgent: this.apiClient.userAgent,
+          fetch: this.apiClient.fetch,
+        });
+        try {
+          // 检测cookie是否需要更新
+          const { refresh, timestamp } = (await apiClient.xpassportCookieInfo())
+            .data;
+
+          if (refresh) {
+            const refresh_token = apiClient.cookies.get("refresh_token");
+
+            // 更新cookie
+            const { refresh_token: new_refresh_token } =
+              await apiClient.refreshCookie({
+                timestamp,
+                refresh_token,
+              });
+            apiClient.cookies.set("refresh_token", new_refresh_token);
+          }
+
+          // 检测登录状态
+          const data = (await apiClient.xapiNav()).data;
+          return {
+            credentials,
+            isLogin: true,
+            user: {
+              id: data.mid,
+              name: data.uname,
+              avatar: data.face,
+            },
+          };
+        } catch (e) {
+          if ((e as RequestError).ok && (e as RequestError).code == -101) {
+            return {
+              credentials,
+              data: {},
+              isLogin: false,
+              user: null,
+            };
+          } else {
+            throw e;
+          }
+        }
       }
     );
 
-    ctx.registerCommand("bilibili.login.qrcode.get", () => {
-      return qrcodeGenerate();
+    ctx.registerCommand(
+      "bilibili.credentials.set",
+      (e, credentials: string) => {
+        return this.setCredentials(credentials);
+      }
+    );
+    ctx.registerCommand("bilibili.client.userAgent", (e, userAgent: string) => {
+      return this.setUserAgent(userAgent);
+    });
+
+    ctx.registerCommand("bilibili.login.qrcode.get", async () => {
+      const { qrcode_key, url } = (
+        await this.apiClient.xpassportQrcodeGenerate()
+      ).data;
+      return { key: qrcode_key, url };
     });
 
     ctx.registerCommand("bilibili.login.qrcode.poll", async (e, key) => {
-      const [status, credentials] = await checkLoginQRcode(key);
-      return { status, credentials };
+      const data = await this.apiClient.xpassportQrcodePoll({
+        qrcode_key: key,
+      });
+      const { code, message, refresh_token } = data.data;
+      if (code == 86101) {
+        // 未扫码
+        return { status: 1, message };
+      } else if (code == 86090) {
+        // 等待确认
+        return { status: 2, message };
+      } else if (code == 0) {
+        // 扫码成功
+        this.apiClient.cookies.set("refresh_token", refresh_token);
+        return { status: 0, message, credentials: this.apiClient.cookie };
+      } else if (code == 86038) {
+        // 二维码失效
+        return { status: -1, message };
+      } else {
+        throw new RequestError({ ok: true, code, message });
+      }
     });
+  }
+
+  /** 设置登录凭证 */
+  setCredentials(cookie: string) {
+    this.apiClient.setCookie(cookie);
+    (this.room?.getList() as RoomBilibili[])
+      ?.filter((r) => r.platform == "bilibili")
+      .forEach((r) => {
+        r.setCredentials(cookie);
+      });
+    return cookie;
+  }
+  /** 设置UA */
+  setUserAgent(userAgent: string) {
+    this.apiClient.userAgent = userAgent;
+    (this.room?.getList() as RoomBilibili[])
+      ?.filter((r) => r.platform == "bilibili")
+      .forEach((r) => {
+        r.userAgent = userAgent;
+      });
+    return userAgent;
   }
 }
 

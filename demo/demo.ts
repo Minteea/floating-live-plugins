@@ -12,7 +12,7 @@ const options = {
   rooms: [
     {
       platform: "bilibili",
-      id: 1017, //6136246,
+      id: 22603245, //6136246,
     },
     // {
     //   platform: "acfun",
@@ -21,6 +21,21 @@ const options = {
   ],
   open: true,
 };
+
+try {
+  const dotenv = await import("dotenv");
+  dotenv.config().parsed;
+} catch (e) {
+  console.warn("不支持dotenv");
+}
+
+function getEnv(key: string) {
+  return (
+    globalThis.process?.env?.[key] ||
+    (globalThis as any).Deno?.env?.get(key) ||
+    undefined
+  );
+}
 
 // 创建live实例
 const floating = new FloatingLive();
@@ -35,7 +50,7 @@ function registerPlugin() {
 
     // 初始化内置插件
     floating.register(ConsoleMessage),
-    floating.register(Save),
+    floating.register(Save, { message: true, raw: true, path: "./saves" }),
   ]);
 }
 
@@ -55,7 +70,7 @@ async function beforeInit() {
   await floating.call(
     "auth",
     "bilibili",
-    "" // "SESSDATA=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    getEnv("API_COOKIES_BILIBILI") || "" // "SESSDATA=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
   );
 }
 

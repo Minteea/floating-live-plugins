@@ -13,7 +13,7 @@ import {} from "floating-live";
 // import { generateId } from "floating-live";
 import { BilibiliRoomData, RoomBaseInfo } from "./types";
 
-import { MessageData, ResponseData } from "bilibili-live-danmaku";
+import { DataXliveGetInfoByRoom, MessageData } from "bilibili-live-danmaku";
 type ParsingFunction<T extends MessageData.All> = {
   [K in T["cmd"]]: (
     msg: any,
@@ -430,14 +430,14 @@ export function parseMessage(
 
 /** 转换bilibili直播间信息为floating通用格式 */
 export function parseGetInfoByRoom(
-  data: ResponseData.GetInfoByRoom
+  data: DataXliveGetInfoByRoom
 ): BilibiliRoomData {
   const {
     room_info,
     anchor_info,
     like_info_v3,
     watched_show,
-  }: ResponseData.GetInfoByRoom = data;
+  }: DataXliveGetInfoByRoom = data;
   return {
     platform: "bilibili",
     id: room_info.room_id,

@@ -241,7 +241,7 @@ __metadata:
   resolution: "@floating-live/acfun@workspace:packages/acfun"
   dependencies:
     "@floating-live/cookies": "npm:^0.1.0"
-    "@floating-live/platform": "npm:^0.16.1"
+    "@floating-live/platform": "npm:^0.16.2"
     "@types/websocket": "npm:^1.0.5"
     "@types/ws": "npm:^8.5.3"
     acfun-live-danmaku: "npm:^0.8.0-beta.0"
@@ -258,7 +258,7 @@ __metadata:
   resolution: "@floating-live/bilibili@workspace:packages/bilibili"
   dependencies:
     "@floating-live/cookies": "npm:^0.1.0"
-    "@floating-live/platform": "npm:^0.16.1"
+    "@floating-live/platform": "npm:^0.16.2"
     "@types/md5": "npm:^2.3.0"
     "@types/websocket": "npm:^1.0.5"
     "@types/ws": "npm:^8.5.3"
@@ -279,7 +279,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@floating-live/platform@npm:^0.16.1, @floating-live/platform@workspace:packages/platform":
+"@floating-live/platform@npm:^0.16.2, @floating-live/platform@workspace:packages/platform":
   version: 0.0.0-use.local
   resolution: "@floating-live/platform@workspace:packages/platform"
   dependencies:

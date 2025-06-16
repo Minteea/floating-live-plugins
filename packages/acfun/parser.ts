@@ -245,7 +245,7 @@ function getGiftInfo(
   const { giftName, webpPicList, payWalletType } =
     giftList?.find((val) => val.giftId.toString() == giftId) || {};
   const value = parseInt(rank);
-  const currency = payWalletType || (value < 1000 ? 1 : 2);
+  const currency = payWalletType || (value < 1000 ? 2 : 1);
   return {
     id: giftId,
     name: giftName || `${giftId}号礼物`,

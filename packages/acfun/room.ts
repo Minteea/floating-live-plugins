@@ -264,10 +264,28 @@ export class RoomAcfun extends LiveRoom {
 
   async fetchGiftList() {
     if (this.customFetchGiftList) return this.customFetchGiftList(this.id);
+    console.log({
+      ...(this.#tokens as ConnectTokens),
+      authorId: this.id,
+      liveId: this.liveId!,
+    });
+    const { did, userId, st } = { ...(this.#tokens as ConnectTokens) };
+    const isVisitor = userId >= 1000000000000000;
+
     return getGiftList(
-      { ...(this.#tokens as ConnectTokens), authorId: this.id },
+      {
+        authorId: this.id,
+        userId: userId,
+        did: did,
+        liveId: this.liveId!,
+        "acfun.midground.api_st": !isVisitor ? st : undefined,
+        "acfun.api.visitor_st": isVisitor ? st : undefined,
+      },
       this.#getFetchOptions()
-    ).catch(() => []);
+    ).catch((e) => {
+      console.log(e);
+      return [];
+    });
   }
 
   /** 更新直播间信息 */

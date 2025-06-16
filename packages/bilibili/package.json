@@ -1,6 +1,6 @@
 {
   "name": "@floating-live/bilibili",
-  "version": "0.16.0",
+  "version": "0.16.1",
   "type": "module",
   "main": "index.js",
   "types": "index.d.ts",
@@ -19,7 +19,7 @@
     "md5": "^2.3.0"
   },
   "devDependencies": {
-    "@floating-live/platform": "^0.16.0",
+    "@floating-live/platform": "^0.16.1",
     "@types/md5": "^2.3.0",
     "@types/websocket": "^1.0.5",
     "@types/ws": "^8.5.3",

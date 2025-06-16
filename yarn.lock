@@ -241,7 +241,7 @@ __metadata:
   resolution: "@floating-live/acfun@workspace:packages/acfun"
   dependencies:
     "@floating-live/cookies": "npm:^0.1.0"
-    "@floating-live/platform": "npm:^0.16.0"
+    "@floating-live/platform": "npm:^0.16.1"
     "@types/websocket": "npm:^1.0.5"
     "@types/ws": "npm:^8.5.3"
     acfun-live-danmaku: "npm:^0.8.0-beta.0"
@@ -257,7 +257,7 @@ __metadata:
   resolution: "@floating-live/bilibili@workspace:packages/bilibili"
   dependencies:
     "@floating-live/cookies": "npm:^0.1.0"
-    "@floating-live/platform": "npm:^0.16.0"
+    "@floating-live/platform": "npm:^0.16.1"
     "@types/md5": "npm:^2.3.0"
     "@types/websocket": "npm:^1.0.5"
     "@types/ws": "npm:^8.5.3"
@@ -277,7 +277,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@floating-live/platform@npm:^0.16.0, @floating-live/platform@workspace:packages/platform":
+"@floating-live/platform@npm:^0.16.1, @floating-live/platform@workspace:packages/platform":
   version: 0.0.0-use.local
   resolution: "@floating-live/platform@workspace:packages/platform"
   dependencies:
@@ -343,20 +343,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@floating-live/plugin-server@workspace:packages/plugin-server":
-  version: 0.0.0-use.local
-  resolution: "@floating-live/plugin-server@workspace:packages/plugin-server"
-  dependencies:
-    "@hono/node-server": "npm:^1.14.0"
-    hono: "npm:^4.7.5"
-    rimraf: "npm:^3.0.2"
-    typescript: "npm:^4.8.4"
-  peerDependencies:
-    events: ^3.3.0
-    floating-live: ^0.15.6
-  languageName: unknown
-  linkType: soft
-
 "@floating-live/plugins@workspace:.":
   version: 0.0.0-use.local
   resolution: "@floating-live/plugins@workspace:."
@@ -385,15 +371,6 @@ __metadata:
     floating-live: ^0.16.0
   languageName: unknown
   linkType: soft
-
-"@hono/node-server@npm:^1.14.0":
-  version: 1.14.4
-  resolution: "@hono/node-server@npm:1.14.4"
-  peerDependencies:
-    hono: ^4
-  checksum: 10c0/1dc6296ddda0b9708cbafb406e22fb3d937505b80ec991483a5066ffa162da2cb2331b4591e7b4bbc07c62e2bea7b3a751cb0fcff33f9fba870ff95a694261ef
-  languageName: node
-  linkType: hard
 
 "@hutson/parse-repository-url@npm:^3.0.0":
   version: 3.0.2
@@ -2892,13 +2869,6 @@ __metadata:
   dependencies:
     function-bind: "npm:^1.1.2"
   checksum: 10c0/9e27e70e8e4204f4124c8f99950d1ba2b1f5174864fd39ff26da190f9ea6488c1b3927dcc64981c26d1f637a971783c9489d62c829d393ea509e6f1ba20370bb
-  languageName: node
-  linkType: hard
-
-"hono@npm:^4.7.5":
-  version: 4.7.11
-  resolution: "hono@npm:4.7.11"
-  checksum: 10c0/2821471b09f2e9f7bab5ad7412e2e44df5f07b7098508d70dd6e368b933580f03a06c30e20dd764b53e0121e1b1ff2132ae98cffa7fd1b286e299f9054effd6a
   languageName: node
   linkType: hard
 
@@ -5752,16 +5722,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:^4.8.4":
-  version: 4.9.5
-  resolution: "typescript@npm:4.9.5"
-  bin:
-    tsc: bin/tsc
-    tsserver: bin/tsserver
-  checksum: 10c0/5f6cad2e728a8a063521328e612d7876e12f0d8a8390d3b3aaa452a6a65e24e9ac8ea22beb72a924fd96ea0a49ea63bb4e251fb922b12eedfb7f7a26475e5c56
-  languageName: node
-  linkType: hard
-
 "typescript@npm:^5.8.3":
   version: 5.8.3
   resolution: "typescript@npm:5.8.3"
@@ -5779,16 +5739,6 @@ __metadata:
     tsc: bin/tsc
     tsserver: bin/tsserver
   checksum: 10c0/fcf6658073d07283910d9a0e04b1d5d0ebc822c04dbb7abdd74c3151c7aa92fcddbac7d799404e358197222006ccdc4c0db219d223d2ee4ccd9e2b01333b49be
-  languageName: node
-  linkType: hard
-
-"typescript@patch:typescript@npm%3A^4.8.4#optional!builtin<compat/typescript>":
-  version: 4.9.5
-  resolution: "typescript@patch:typescript@npm%3A4.9.5#optional!builtin<compat/typescript>::version=4.9.5&hash=289587"
-  bin:
-    tsc: bin/tsc
-    tsserver: bin/tsserver
-  checksum: 10c0/e3333f887c6829dfe0ab6c1dbe0dd1e3e2aeb56c66460cb85c5440c566f900c833d370ca34eb47558c0c69e78ced4bfe09b8f4f98b6de7afed9b84b8d1dd06a1
   languageName: node
   linkType: hard
 

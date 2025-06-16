@@ -1,6 +1,6 @@
 {
   "name": "@floating-live/plugin-console-event",
-  "version": "0.16.0",
+  "version": "0.16.1",
   "type": "module",
   "main": "index.js",
   "types": "index.d.ts",

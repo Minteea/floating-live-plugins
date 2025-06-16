@@ -13,6 +13,9 @@
     "prepack": "npm run build",
     "postpack": "npm run clear"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@types/fs-extra": "^9.0.13",
     "@types/websocket": "^1.0.5",
@@ -23,5 +26,6 @@
   "peerDependencies": {
     "events": "^3.3.0",
     "floating-live": "^0.15.6"
-  }
+  },
+  "gitHead": "eb7c02f5dba6b6abc223b747cdf391942ae9e734"
 }

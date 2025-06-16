@@ -9,7 +9,11 @@
     "esModuleInterop": true,
     "strict": true,
     "rootDir": ".",
+    "outDir": ".",
     "skipLibCheck": true
   },
-  "files": ["index.ts"]
+  "files": ["index.ts"],
+  "tsc-alias": {
+    "resolveFullPaths": true
+  }
 }

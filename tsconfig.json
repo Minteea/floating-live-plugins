@@ -8,6 +8,7 @@
     "esModuleInterop": true,
     "strict": true,
     "rootDir": ".",
+    "outDir": ".",
     "moduleResolution": "bundler"
   }
 }

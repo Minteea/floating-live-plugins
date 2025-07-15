@@ -162,9 +162,7 @@ export class BilibiliApiClientEx extends BilibiliApiClient {
       "https://passport.bilibili.com/x/passport-login/web/qrcode/poll"
     );
     url.searchParams.set("qrcode_key", params.qrcode_key);
-    const res = await this.request(
-      "https://passport.bilibili.com/x/passport-login/web/qrcode/generate"
-    );
+    const res = await this.request(url);
     const data = unwrapRequestData<DataXpassportQrcodePoll>(res);
     this.cookies.setFromHeaders(res.headers);
     return data;

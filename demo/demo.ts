@@ -10,13 +10,9 @@ import PluginPlatform from "@floating-live/platform";
 
 const options = {
   rooms: [
-    /*     {
-      platform: "bilibili",
-      id: 22603245, //6136246,
-    }, */
     {
-      platform: "acfun",
-      id: 23682490,
+      platform: "bilibili",
+      id: 24371027,
     },
   ],
   open: true,

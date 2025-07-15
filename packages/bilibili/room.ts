@@ -230,9 +230,9 @@ export class RoomBilibili extends LiveRoom implements BilibiliRoomData {
   /** 设置登录凭据 */
   async setCredentials(credentials: string, updateTokens = true) {
     this.#apiClient.setCookie(credentials);
-    // 在没有buvid3的情况下，访问bilibili主页，获得buvid3
+    // 在没有buvid3的情况下，初始化必要cookie
     if (!this.#apiClient.cookies.has("buvid3")) {
-      this.#apiClient.wwwBilibili();
+      await this.#apiClient.initCookie();
     }
     if (updateTokens) this.updateTokens();
   }

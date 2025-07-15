@@ -9,7 +9,7 @@
   "scripts": {
     "check": "tsc --noEmit",
     "clear": "rimraf **/*.js **/*.d.ts --glob",
-    "build": "npm run clear && tsc --build && tsc-alias",
+    "build": "npm run clear && npm run check &&  tsc --build && tsc-alias",
     "prepack": "npm run build",
     "postpack": "npm run clear"
   },
@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@floating-live/cookies": "^0.1.0",
-    "bilibili-live-danmaku": "^0.7.4",
+    "bilibili-live-danmaku": "^0.7.6",
     "md5": "^2.3.0"
   },
   "devDependencies": {

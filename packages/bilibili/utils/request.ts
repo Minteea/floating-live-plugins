@@ -207,7 +207,7 @@ export class BilibiliApiClientEx extends BilibiliApiClient {
     url.searchParams.set("refresh_csrf", params.refresh_csrf);
     url.searchParams.set("source", params.source || "main_web");
     url.searchParams.set("refresh_token", params.refresh_token);
-    const res = await this.request(url);
+    const res = await this.request(url, { method: "POST" });
     const data = unwrapRequestData<DataXpassportCookieRefresh>(res);
     this.cookies.setFromHeaders(res.headers);
     return data;
@@ -221,7 +221,7 @@ export class BilibiliApiClientEx extends BilibiliApiClient {
     );
     url.searchParams.set("csrf", params.csrf);
     url.searchParams.set("refresh_token", params.refresh_token);
-    const res = await this.request(url);
+    const res = await this.request(url, { method: "POST" });
 
     return unwrapRequestData<unknown>(res);
   }

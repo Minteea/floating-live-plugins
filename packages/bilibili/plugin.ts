@@ -16,6 +16,7 @@ interface BilibiliLoginInfo {
   credentials: string;
   isLogin: boolean;
   user: UserInfo | null;
+  refreshed: boolean;
 }
 
 declare module "floating-live" {
@@ -111,11 +112,19 @@ export class PluginBilibili extends BasePlugin {
     ctx.registerCommand(
       "bilibili.credentials.check",
       async (e, credentials) => {
+        let refreshed = true;
+
         const apiClient = new BilibiliApiClientEx({
           cookie: credentials,
           userAgent: this.apiClient.userAgent,
           fetch: this.apiClient.fetch,
         });
+
+        // 如buvid3缺失，则初始化cookie
+        if (!apiClient.cookies.has("buvid3")) {
+          await apiClient.initCookie();
+        }
+
         try {
           // 检测cookie是否需要更新
           const { refresh, timestamp } = (await apiClient.xpassportCookieInfo())
@@ -124,13 +133,17 @@ export class PluginBilibili extends BasePlugin {
           if (refresh) {
             const refresh_token = apiClient.cookies.get("refresh_token");
 
-            // 更新cookie
-            const { refresh_token: new_refresh_token } =
-              await apiClient.refreshCookie({
-                timestamp,
-                refresh_token,
-              });
-            apiClient.cookies.set("refresh_token", new_refresh_token);
+            if (refresh_token) {
+              // 如果存在refresh_token字段，则刷新cookie，否则将检查结果标记为未刷新
+              const { refresh_token: new_refresh_token } =
+                await apiClient.refreshCookie({
+                  timestamp,
+                  refresh_token,
+                });
+              apiClient.cookies.set("refresh_token", new_refresh_token);
+            } else {
+              refreshed = false;
+            }
           }
 
           // 检测登录状态
@@ -143,14 +156,17 @@ export class PluginBilibili extends BasePlugin {
               name: data.uname,
               avatar: data.face,
             },
+            refreshed,
           };
         } catch (e) {
           if ((e as RequestError).ok && (e as RequestError).code == -101) {
+            // 用户未登录
             return {
               credentials,
               data: {},
               isLogin: false,
               user: null,
+              refreshed,
             };
           } else {
             throw e;

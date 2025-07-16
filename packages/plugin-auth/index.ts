@@ -7,7 +7,14 @@ import {
 
 declare module "floating-live" {
   interface AppCommandMap {
-    auth: (platform: string, credentials: string) => Promise<void>;
+    auth: (
+      platform: string,
+      credentials: string
+    ) => Promise<{
+      credentials: string;
+      isLogin: boolean;
+      user: UserInfo | null;
+    } | void>;
     "auth.set": (platform: string, credentials: string) => void;
     "auth.check": (
       platform: string,
@@ -76,6 +83,7 @@ export class Auth extends BasePlugin {
       this.set(platform, result.credentials);
       this.setAuthInfo(platform, result.user);
     }
+    return result;
   }
   private setAuthInfo(platform: string, user: UserInfo | null) {
     this.info[platform] = user;

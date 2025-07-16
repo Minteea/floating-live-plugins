@@ -14,7 +14,7 @@ declare module "floating-live" {
       credentials: string;
       isLogin: boolean;
       user: UserInfo | null;
-    } | void>;
+    }>;
     "auth.set": (platform: string, credentials: string) => void;
     "auth.check": (
       platform: string,
@@ -23,7 +23,7 @@ declare module "floating-live" {
       credentials: string;
       isLogin: boolean;
       user: UserInfo | null;
-    } | void>;
+    }>;
     [name: `${string}.credentials.check`]: (credentials: string) => Promise<{
       credentials: string;
       isLogin: boolean;

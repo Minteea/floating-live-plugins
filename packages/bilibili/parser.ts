@@ -145,6 +145,33 @@ const parsingFunction: ParsingFunction<MessageData.All> = {
     interact.id ??= generateId(interact);
     return interact;
   },
+  LIKE_INFO_V3_CLICK: (msg: MessageData.LIKE_INFO_V3_CLICK, room) => {
+    const { data, msg_id, send_time } = msg;
+    let like: LiveMessage.Interact = {
+      platform: "bilibili",
+      roomId: room?.id || 0,
+      userId: data.uid,
+      type: "like",
+      id: msg_id!,
+      timestamp: send_time || getDateTimestamp(),
+      info: {
+        user: {
+          name: data.uname,
+          id: data.uid,
+          medal: data.fans_medal?.medal_level
+            ? {
+                level: data.fans_medal.medal_level,
+                name: data.fans_medal.medal_name,
+                id: data.fans_medal.target_id,
+                membership: data.fans_medal.guard_level,
+              }
+            : null,
+        },
+      },
+    };
+    like.id ??= generateId(like);
+    return like;
+  },
   SEND_GIFT: (msg: MessageData.SEND_GIFT, room) => {
     const { data, msg_id, send_time } = msg;
     let gift: LiveMessage.Gift = {
@@ -188,7 +215,7 @@ const parsingFunction: ParsingFunction<MessageData.All> = {
     gift.id ??= generateId(gift);
     return gift;
   },
-  GUARD_BUY: (msg: MessageData.GUARD_BUY, room) => {
+  USER_TOAST_MSG: (msg: MessageData.USER_TOAST_MSG, room) => {
     const { data, msg_id, send_time } = msg;
     let gift: LiveMessage.Membership = {
       platform: "bilibili",
@@ -203,7 +230,7 @@ const parsingFunction: ParsingFunction<MessageData.All> = {
           id: data.uid,
         },
         gift: {
-          name: data.gift_name,
+          name: data.role_name,
           id: data.gift_id,
           num: data.num,
           value: data.price / 100,
@@ -211,15 +238,54 @@ const parsingFunction: ParsingFunction<MessageData.All> = {
           valueName: "电池",
           price: data.price / 1000,
           currency: "CNY",
+          unit:
+            data.unit == "年" ? "year" : data.unit == "天" ? "day" : "month",
         },
-        name: data.gift_name,
+        name: data.role_name,
         level: data.guard_level,
-        duration: data.num * 30,
+        duration:
+          data.num *
+          (data.unit == "年" ? 365 : data.unit == "天" ? 1 : 30) *
+          24 *
+          3600_000,
       },
     };
     gift.id ??= generateId(gift);
     return gift;
   },
+  // GUARD_BUY: (msg: MessageData.GUARD_BUY, room) => {
+  //   const { data, msg_id, send_time } = msg;
+  //   let gift: LiveMessage.Membership = {
+  //     platform: "bilibili",
+  //     roomId: room?.id || 0,
+  //     userId: data.uid,
+  //     type: "membership",
+  //     id: msg_id!,
+  //     timestamp: send_time || data.start_time * 1000,
+  //     info: {
+  //       user: {
+  //         name: data.username,
+  //         id: data.uid,
+  //       },
+  //       gift: {
+  //         name: data.gift_name,
+  //         id: data.gift_id,
+  //         num: data.num,
+  //         value: data.price / 100,
+  //         valueType: "gold",
+  //         valueName: "电池",
+  //         price: data.price / 1000,
+  //         currency: "CNY",
+  //         unit: "month",
+  //       },
+  //       name: data.gift_name,
+  //       level: data.guard_level,
+  //       duration: data.num * 30 * 24 * 3600_000,
+  //     },
+  //   };
+  //   gift.id ??= generateId(gift);
+  //   return gift;
+  // },
   SUPER_CHAT_MESSAGE: (msg: MessageData.SUPER_CHAT_MESSAGE, room) => {
     const { data, msg_id, send_time } = msg;
     let sc: LiveMessage.Superchat = {

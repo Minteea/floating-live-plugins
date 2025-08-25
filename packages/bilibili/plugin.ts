@@ -54,17 +54,6 @@ const platformInfo: LivePlatformInfo = {
   gift: {
     action: "投喂",
   },
-  currency: {
-    silver: {
-      name: "银瓜子",
-      ratio: 1,
-    },
-    gold: {
-      name: "电池",
-      ratio: 100,
-      money: 1000,
-    },
-  },
   stats: {
     view: "看过",
     online: "在线",

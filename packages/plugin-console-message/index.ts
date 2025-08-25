@@ -53,18 +53,6 @@ export class ConsoleMessage extends BasePlugin {
     return membership?.level?.[level as number] || membership?.name;
   }
 
-  /** 获取货币名称 */
-  public getCurrenyInfo(platform: string, name?: number | string) {
-    const currency = this.pluginPlatform?.get(platform)?.currency;
-    return (
-      currency?.[name || 0] || {
-        name: "",
-        ratio: 1,
-        money: 0,
-      }
-    );
-  }
-
   /** 记录在控制台上 */
   log(message: LiveMessage.All) {
     switch (message.type) {
@@ -85,14 +73,16 @@ export class ConsoleMessage extends BasePlugin {
       }
       case "gift": {
         const user = this.getUserInfo(message);
-        const { name, num, value, action = "送出" } = message.info.gift;
-        const currency = this.getCurrenyInfo(
-          message.platform,
-          message.info.gift.currency
-        );
+        const {
+          name,
+          num,
+          value,
+          action = "送出",
+          valueName,
+        } = message.info.gift;
         log(
           `${user} ${action} ${chalk.yellow(`${name} x${num}`)} ${chalk.dim(
-            `(${value / currency.ratio}${currency.name})`
+            `(${value}${valueName})`
           )}`
         );
         break;
@@ -132,7 +122,7 @@ export class ConsoleMessage extends BasePlugin {
       }
       case "block": {
         let user = this.getUserInfo(message);
-        let operator = message.info.operator.type
+        let operator = message.info.operator?.type
           ? { [UserType.admin]: "房管", [UserType.anchor]: "主播" }[
               message.info.operator.type
             ]

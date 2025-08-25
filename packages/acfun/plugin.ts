@@ -28,17 +28,6 @@ const platformInfo: LivePlatformInfo = {
   gift: {
     action: "送出",
   },
-  currency: {
-    1: {
-      name: "AC币",
-      ratio: 1,
-      money: 10,
-    },
-    2: {
-      name: "香蕉",
-      ratio: 1,
-    },
-  },
   stats: {
     online: "在线",
     like: "点赞",

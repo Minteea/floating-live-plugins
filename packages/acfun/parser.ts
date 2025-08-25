@@ -251,7 +251,10 @@ function getGiftInfo(
     name: giftName || `${giftId}号礼物`,
     num: batchSize,
     value: currency == 1 ? value / 1000 : value,
-    currency: currency,
+    valueType: currency,
+    valueName: currency == 1 ? "AC币" : "香蕉",
+    price: currency == 1 ? value / 10000 : 0,
+    currency: "CNY",
     image: webpPicList?.[0].url,
     comboId: comboKey,
   };

@@ -262,7 +262,7 @@ __metadata:
     "@types/md5": "npm:^2.3.0"
     "@types/websocket": "npm:^1.0.5"
     "@types/ws": "npm:^8.5.3"
-    bilibili-live-danmaku: "npm:^0.7.9"
+    bilibili-live-danmaku: "npm:^0.7.12"
     md5: "npm:^2.3.0"
     rimraf: "npm:^3.0.2"
     tsc-alias: "npm:^1.8.16"
@@ -1484,14 +1484,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bilibili-live-danmaku@npm:^0.7.9":
-  version: 0.7.9
-  resolution: "bilibili-live-danmaku@npm:0.7.9"
+"bilibili-live-danmaku@npm:^0.7.12":
+  version: 0.7.12
+  resolution: "bilibili-live-danmaku@npm:0.7.12"
   dependencies:
     "@floating-live/cookies": "npm:^0.1.0"
     md5: "npm:^2.3.0"
     pako: "npm:^2.1.0"
-  checksum: 10c0/6f5af737bcd788d8d970731224e48d714bfda25ebfb1e4a714861ede771bec94653a0fdbd96f0e2eab2e3a72fdcdba7e3e282e30da9e90e4a014c675b0e0771b
+    protobufjs: "npm:^7.5.4"
+  checksum: 10c0/eed7a53dac5f64632bcad84057b4169749aea3772f7558e16e4cf4f0a4607cbe04975d07f251d9d0123d0ca9808e6ac560f610f8b616628b2e7f7f3e1f9a3498
   languageName: node
   linkType: hard
 
@@ -4962,6 +4963,26 @@ __metadata:
     "@types/node": "npm:>=13.7.0"
     long: "npm:^5.0.0"
   checksum: 10c0/a5460a63fe596523b9a067cbce39a6b310d1a71750fda261f076535662aada97c24450e18c5bc98a27784f70500615904ff1227e1742183509f0db4fdede669b
+  languageName: node
+  linkType: hard
+
+"protobufjs@npm:^7.5.4":
+  version: 7.5.4
+  resolution: "protobufjs@npm:7.5.4"
+  dependencies:
+    "@protobufjs/aspromise": "npm:^1.1.2"
+    "@protobufjs/base64": "npm:^1.1.2"
+    "@protobufjs/codegen": "npm:^2.0.4"
+    "@protobufjs/eventemitter": "npm:^1.1.0"
+    "@protobufjs/fetch": "npm:^1.1.0"
+    "@protobufjs/float": "npm:^1.0.2"
+    "@protobufjs/inquire": "npm:^1.1.0"
+    "@protobufjs/path": "npm:^1.1.2"
+    "@protobufjs/pool": "npm:^1.1.0"
+    "@protobufjs/utf8": "npm:^1.1.0"
+    "@types/node": "npm:>=13.7.0"
+    long: "npm:^5.0.0"
+  checksum: 10c0/913b676109ffb3c05d3d31e03a684e569be91f3bba8613da4a683d69d9dba948daa2afd7d2e7944d1aa6c417890c35d9d9a8883c1160affafb0f9670d59ef722
   languageName: node
   linkType: hard
 

@@ -15,7 +15,7 @@ import { BilibiliRoomData, RoomBaseInfo } from "./types";
 
 import { DataXliveGetInfoByRoom, MessageData } from "bilibili-live-danmaku";
 type ParsingFunction<T extends MessageData.All> = {
-  [K in T["cmd"]]: (
+  [K in T["cmd"]]?: (
     msg: any,
     room?: LiveRoomData
   ) => LiveMessage.All | undefined;
@@ -104,6 +104,7 @@ const parsingFunction: ParsingFunction<MessageData.All> = {
     danmaku.id ??= generateId(danmaku);
     return danmaku;
   },
+  /** @deprecated */
   INTERACT_WORD: (msg: MessageData.INTERACT_WORD, room) => {
     const { data, msg_id, send_time } = msg;
     let type: "entry" | "follow" | "share";
@@ -145,6 +146,51 @@ const parsingFunction: ParsingFunction<MessageData.All> = {
     interact.id ??= generateId(interact);
     return interact;
   },
+
+  INTERACT_WORD_V2: (msg: MessageData.INTERACT_WORD_V2, room) => {
+    const { decoded, msg_id, send_time } = msg;
+    const data = decoded!;
+    let type: "entry" | "follow" | "share";
+    switch (Number(data.msgType)) {
+      case 1:
+        type = "entry"; // 进入直播间
+        break;
+      case 2:
+        type = "follow"; // 关注直播间
+        break;
+      case 3:
+        type = "share"; // 分享直播间
+        break;
+      default:
+        return;
+    }
+    let interact: LiveMessage.Interact = {
+      platform: "bilibili",
+      roomId: room?.id || 0,
+      userId: Number(data.uid),
+      type: type,
+      id: msg_id!,
+      timestamp:
+        send_time || Math.floor(Number(data.triggerTime || 0) / 1000000),
+      info: {
+        user: {
+          name: data.uname!,
+          id: Number(data.uid),
+          medal: data.fansMedal?.medalLevel
+            ? {
+                level: Number(data.fansMedal.medalLevel),
+                name: data.fansMedal.medalName!,
+                id: Number(data.fansMedal.targetId),
+                membership: Number(data.fansMedal.guardLevel),
+              }
+            : null,
+        },
+      },
+    };
+    interact.id ??= generateId(interact);
+    return interact;
+  },
+
   LIKE_INFO_V3_CLICK: (msg: MessageData.LIKE_INFO_V3_CLICK, room) => {
     const { data, msg_id, send_time } = msg;
     let like: LiveMessage.Interact = {
@@ -500,6 +546,7 @@ export function parseMessage(
   data: MessageData.All,
   room?: BilibiliRoomData
 ): LiveMessage.All | undefined {
+  console.log(data.cmd);
   return parsingFunction[data.cmd]?.(data, room);
 }
 

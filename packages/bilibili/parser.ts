@@ -546,7 +546,6 @@ export function parseMessage(
   data: MessageData.All,
   room?: BilibiliRoomData
 ): LiveMessage.All | undefined {
-  console.log(data.cmd);
   return parsingFunction[data.cmd]?.(data, room);
 }
 

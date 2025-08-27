@@ -157,7 +157,7 @@ class MsgSave {
     );
     fs.writeFile(
       file,
-      JSON.stringify(message) + ",",
+      JSON.stringify(message) + ",\n",
       { encoding: "utf8", flag: "a" },
       (err) => {
         if (err) throw err;
@@ -244,7 +244,7 @@ class MsgSave {
       part: saveInfo.part,
       roomInfo: this.getRoomData(roomKey),
     };
-    fs.writeFileSync(file, JSON.stringify(message) + ",", {
+    fs.writeFileSync(file, JSON.stringify(message) + ",\n", {
       encoding: "utf8",
       flag: "a",
     });

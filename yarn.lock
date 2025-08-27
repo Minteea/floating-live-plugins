@@ -262,7 +262,7 @@ __metadata:
     "@types/md5": "npm:^2.3.0"
     "@types/websocket": "npm:^1.0.5"
     "@types/ws": "npm:^8.5.3"
-    bilibili-live-danmaku: "npm:^0.7.12"
+    bilibili-live-danmaku: "npm:^0.7.13"
     md5: "npm:^2.3.0"
     rimraf: "npm:^3.0.2"
     tsc-alias: "npm:^1.8.16"
@@ -1484,15 +1484,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bilibili-live-danmaku@npm:^0.7.12":
-  version: 0.7.12
-  resolution: "bilibili-live-danmaku@npm:0.7.12"
+"bilibili-live-danmaku@npm:^0.7.13":
+  version: 0.7.13
+  resolution: "bilibili-live-danmaku@npm:0.7.13"
   dependencies:
     "@floating-live/cookies": "npm:^0.1.0"
     md5: "npm:^2.3.0"
     pako: "npm:^2.1.0"
     protobufjs: "npm:^7.5.4"
-  checksum: 10c0/eed7a53dac5f64632bcad84057b4169749aea3772f7558e16e4cf4f0a4607cbe04975d07f251d9d0123d0ca9808e6ac560f610f8b616628b2e7f7f3e1f9a3498
+  checksum: 10c0/0c843a7e392a7a65fc1f6807e031b60535109a18ec8a02378f4f2a2a0e8df5df9494fa8af3836af72cfc49adee8884cee9a3d759ef7fa010edf1a30b9fce20dc
   languageName: node
   linkType: hard
 

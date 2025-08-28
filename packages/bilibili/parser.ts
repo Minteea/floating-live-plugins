@@ -95,7 +95,7 @@ const parsingFunction: ParsingFunction<MessageData.All> = {
         user: {
           name: uname,
           id: uid,
-          avatar: info[0][15].user.base.face,
+          avatar: info[0][15].user?.base?.face,
           medal: medal,
           membership: guard_level,
           type: identity,
@@ -177,7 +177,7 @@ const parsingFunction: ParsingFunction<MessageData.All> = {
         user: {
           name: data.uname!,
           id: Number(data.uid),
-          avatar: data.uinfo!.base!.face!,
+          avatar: data.uinfo?.base?.face!,
           medal: data.fansMedal?.medalLevel
             ? {
                 level: Number(data.fansMedal.medalLevel),
@@ -206,7 +206,7 @@ const parsingFunction: ParsingFunction<MessageData.All> = {
         user: {
           name: data.uname,
           id: data.uid,
-          avatar: data.uinfo.base.face,
+          avatar: data.uinfo?.base?.face,
           medal: data.fans_medal?.medal_level
             ? {
                 level: data.fans_medal.medal_level,

@@ -95,6 +95,7 @@ const parsingFunction: ParsingFunction<MessageData.All> = {
         user: {
           name: uname,
           id: uid,
+          avatar: info[0][15].user.base.face,
           medal: medal,
           membership: guard_level,
           type: identity,
@@ -104,48 +105,48 @@ const parsingFunction: ParsingFunction<MessageData.All> = {
     danmaku.id ??= generateId(danmaku);
     return danmaku;
   },
-  /** @deprecated */
-  INTERACT_WORD: (msg: MessageData.INTERACT_WORD, room) => {
-    const { data, msg_id, send_time } = msg;
-    let type: "entry" | "follow" | "share";
-    switch (data.msg_type) {
-      case 1:
-        type = "entry"; // 进入直播间
-        break;
-      case 2:
-        type = "follow"; // 关注直播间
-        break;
-      case 3:
-        type = "share"; // 分享直播间
-        break;
-      default:
-        return;
-    }
-    let interact: LiveMessage.Interact = {
-      platform: "bilibili",
-      roomId: room?.id || 0,
-      userId: data.uid,
-      type: type,
-      id: msg_id!,
-      timestamp: send_time || Math.floor(data.trigger_time / 1000000),
-      info: {
-        user: {
-          name: data.uname,
-          id: data.uid,
-          medal: data.fans_medal?.medal_level
-            ? {
-                level: data.fans_medal.medal_level,
-                name: data.fans_medal.medal_name,
-                id: data.fans_medal.target_id,
-                membership: data.fans_medal.guard_level,
-              }
-            : null,
-        },
-      },
-    };
-    interact.id ??= generateId(interact);
-    return interact;
-  },
+  // /** @deprecated */
+  // INTERACT_WORD: (msg: MessageData.INTERACT_WORD, room) => {
+  //   const { data, msg_id, send_time } = msg;
+  //   let type: "entry" | "follow" | "share";
+  //   switch (data.msg_type) {
+  //     case 1:
+  //       type = "entry"; // 进入直播间
+  //       break;
+  //     case 2:
+  //       type = "follow"; // 关注直播间
+  //       break;
+  //     case 3:
+  //       type = "share"; // 分享直播间
+  //       break;
+  //     default:
+  //       return;
+  //   }
+  //   let interact: LiveMessage.Interact = {
+  //     platform: "bilibili",
+  //     roomId: room?.id || 0,
+  //     userId: data.uid,
+  //     type: type,
+  //     id: msg_id!,
+  //     timestamp: send_time || Math.floor(data.trigger_time / 1000000),
+  //     info: {
+  //       user: {
+  //         name: data.uname,
+  //         id: data.uid,
+  //         medal: data.fans_medal?.medal_level
+  //           ? {
+  //               level: data.fans_medal.medal_level,
+  //               name: data.fans_medal.medal_name,
+  //               id: data.fans_medal.target_id,
+  //               membership: data.fans_medal.guard_level,
+  //             }
+  //           : null,
+  //       },
+  //     },
+  //   };
+  //   interact.id ??= generateId(interact);
+  //   return interact;
+  // },
 
   INTERACT_WORD_V2: (msg: MessageData.INTERACT_WORD_V2, room) => {
     const { decoded, msg_id, send_time } = msg;
@@ -176,6 +177,7 @@ const parsingFunction: ParsingFunction<MessageData.All> = {
         user: {
           name: data.uname!,
           id: Number(data.uid),
+          avatar: data.uinfo!.base!.face!,
           medal: data.fansMedal?.medalLevel
             ? {
                 level: Number(data.fansMedal.medalLevel),
@@ -204,6 +206,7 @@ const parsingFunction: ParsingFunction<MessageData.All> = {
         user: {
           name: data.uname,
           id: data.uid,
+          avatar: data.uinfo.base.face,
           medal: data.fans_medal?.medal_level
             ? {
                 level: data.fans_medal.medal_level,
@@ -299,6 +302,7 @@ const parsingFunction: ParsingFunction<MessageData.All> = {
     gift.id ??= generateId(gift);
     return gift;
   },
+  // /** @deprecated */
   // GUARD_BUY: (msg: MessageData.GUARD_BUY, room) => {
   //   const { data, msg_id, send_time } = msg;
   //   let gift: LiveMessage.Membership = {
@@ -516,29 +520,29 @@ const parsingFunction: ParsingFunction<MessageData.All> = {
     change.id ??= generateId(change);
     return change;
   },
-  ANCHOR_LOT_START: (msg: MessageData.ANCHOR_LOT_START, room) => {
-    const { data, msg_id, send_time } = msg;
-    let m: LiveMessage.Lottery = {
-      platform: "bilibili",
-      roomId: room?.id || 0,
-      userId: 0,
-      type: "lottery",
-      timestamp: send_time || data.current_time * 1000,
-      id: msg_id!,
-      info: {
-        id: data.id,
-        award: {
-          name: data.award_name,
-          num: data.award_num,
-          image: data.award_image,
-          id: -1,
-          value: 0,
-          currency: "",
-        },
-      },
-    };
-    return m;
-  },
+  // ANCHOR_LOT_START: (msg: MessageData.ANCHOR_LOT_START, room) => {
+  //   const { data, msg_id, send_time } = msg;
+  //   let m: LiveMessage.Lottery = {
+  //     platform: "bilibili",
+  //     roomId: room?.id || 0,
+  //     userId: 0,
+  //     type: "lottery",
+  //     timestamp: send_time || data.current_time * 1000,
+  //     id: msg_id!,
+  //     info: {
+  //       id: data.id,
+  //       award: {
+  //         name: data.award_name,
+  //         num: data.award_num,
+  //         image: data.award_image,
+  //         id: -1,
+  //         value: 0,
+  //         currency: "",
+  //       },
+  //     },
+  //   };
+  //   return m;
+  // },
 };
 
 /** 转换bilibili直播弹幕为floating通用格式 */

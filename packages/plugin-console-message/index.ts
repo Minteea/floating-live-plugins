@@ -5,7 +5,6 @@ import {
   UserInfo,
   UserType,
 } from "floating-live";
-import type {} from "@floating-live/platform";
 import chalk from "chalk";
 
 const log = console.log;
@@ -34,13 +33,13 @@ export class ConsoleMessage extends BasePlugin {
     if (medal) list.push(chalk.green(`[${medal.name}(${medal.level})] `));
     if (membership)
       list.push(
-        chalk.cyan(`[${this.getMembershipName(platform, membership)}]`)
+        chalk.cyan(`[${this.getMembershipName(platform, membership)}]`),
       );
     if (type)
       list.push(
         chalk.magenta(
-          `[${{ [UserType.admin]: "房管", [UserType.anchor]: "主播" }[type]}]`
-        )
+          `[${{ [UserType.admin]: "房管", [UserType.anchor]: "主播" }[type]}]`,
+        ),
       );
     list.push(chalk.yellow(name)); // 用户名
 
@@ -62,7 +61,7 @@ export class ConsoleMessage extends BasePlugin {
         log(
           `${user}${chalk.dim(":")} ${
             message.info.image ? chalk.dim("[img]") : ""
-          }${content}`
+          }${content}`,
         );
         break;
       }
@@ -82,8 +81,8 @@ export class ConsoleMessage extends BasePlugin {
         } = message.info.gift;
         log(
           `${user} ${action} ${chalk.yellow(`${name} x${num}`)} ${chalk.dim(
-            `(${value}${valueName})`
-          )}`
+            `(${value}${valueName})`,
+          )}`,
         );
         break;
       }
@@ -100,8 +99,8 @@ export class ConsoleMessage extends BasePlugin {
           chalk.bold(
             `${chalk.cyan(`[SC(${second}s)]`)} ${user}${chalk.dim(":")} ${
               message.info.content
-            }`
-          )
+            }`,
+          ),
         );
         break;
       }
@@ -134,8 +133,8 @@ export class ConsoleMessage extends BasePlugin {
         let roomKey = `${message.platform}:${message.roomId}`;
         log(
           chalk.bold(
-            `${chalk.green("[+]")} 直播间 ${chalk.yellow(roomKey)} 已开播`
-          )
+            `${chalk.green("[+]")} 直播间 ${chalk.yellow(roomKey)} 已开播`,
+          ),
         );
         break;
       }
@@ -145,9 +144,9 @@ export class ConsoleMessage extends BasePlugin {
         log(
           chalk.bold(
             `${chalk.red("[!]")} 直播间 ${chalk.yellow(
-              roomKey
-            )} 被管理员切断${chalk.dim(":")} ${msg}`
-          )
+              roomKey,
+            )} 被管理员切断${chalk.dim(":")} ${msg}`,
+          ),
         );
         break;
       }
@@ -155,8 +154,8 @@ export class ConsoleMessage extends BasePlugin {
         let roomKey = `${message.platform}:${message.roomId}`;
         log(
           chalk.bold(
-            `${chalk.blue("[-]")} 直播间 ${chalk.yellow(roomKey)} 已结束直播`
-          )
+            `${chalk.blue("[-]")} 直播间 ${chalk.yellow(roomKey)} 已结束直播`,
+          ),
         );
       }
     }

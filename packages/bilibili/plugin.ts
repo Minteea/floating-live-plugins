@@ -8,7 +8,6 @@ import {
   type LivePlatformInfo,
 } from "floating-live";
 import { RoomBilibili, RoomOptions } from "./room";
-import type {} from "@floating-live/platform";
 import { BilibiliApiClientEx, fetchLiveRoomData } from "./utils/request";
 import { RequestError } from "bilibili-live-danmaku";
 
@@ -23,7 +22,7 @@ declare module "floating-live" {
   interface AppCommandMap {
     /** 检测并更新登录cookie有效性 */
     "bilibili.credentials.check": (
-      credentials: string
+      credentials: string,
     ) => Promise<BilibiliLoginInfo>;
 
     /** 设置UA */
@@ -89,13 +88,13 @@ export class PluginBilibili extends BasePlugin {
           fetch: this.apiClient.fetch,
           ...options,
         });
-      }
+      },
     );
     ctx.registerCommand(
       "bilibili.room.data",
       async (e, id: string | number) => {
         return await fetchLiveRoomData(this.apiClient, parseInt(id.toString()));
-      }
+      },
     );
 
     ctx.registerCommand(
@@ -161,14 +160,14 @@ export class PluginBilibili extends BasePlugin {
             throw e;
           }
         }
-      }
+      },
     );
 
     ctx.registerCommand(
       "bilibili.credentials.set",
       (e, credentials: string) => {
         return this.setCredentials(credentials);
-      }
+      },
     );
     ctx.registerCommand("bilibili.client.userAgent", (e, userAgent: string) => {
       return this.setUserAgent(userAgent);

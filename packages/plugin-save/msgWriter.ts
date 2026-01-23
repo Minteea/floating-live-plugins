@@ -4,8 +4,17 @@ import {
   LiveRoomStatus,
   PluginContext,
 } from "floating-live";
-import { createWriteStream, ensureDirSync } from "fs-extra";
-import path from "path";
+import { ensureDirSync } from "fs-extra";
+import { createWriteStream } from "node:fs";
+import path from "node:path";
+import { encode as encodeMsgpack } from "@msgpack/msgpack";
+import {
+  RecordRoomInfo,
+  RecordEndInfo,
+  RecordStartInfo,
+  RecordEventInfo,
+  RecordPartInfo,
+} from "./types";
 
 function getTimeStr(timestamp: number) {
   let startDate = new Date(timestamp);
@@ -39,20 +48,15 @@ interface SaveConfig {
   rootPath: string;
   sliceByStatus?: boolean;
   sliceByCount?: number;
-  // mode?: "json" | "msgpack";
+  formatMode?: "jsonl" | "msgpack";
 }
 
-type RecordRoomInfo = Partial<LiveRoomData> &
-  Pick<LiveRoomData, "platform" | "id" | "status">;
-
 /** 消息写入 */
-export class MessageWriter implements SaveConfig {
-  /** 前缀 */
-  readonly prefix: string;
+export abstract class MessageWriter implements SaveConfig {
   /** 后缀 */
   readonly suffix: string;
   /** 当前文件可写流 */
-  currentStream: NodeJS.WritableStream;
+  currentStream!: NodeJS.WritableStream;
   /** 文件id */
   getFileId() {
     return `${this.platform}_${this.roomId}@${getTimeStr(this.timestamp || 0)}${
@@ -64,7 +68,7 @@ export class MessageWriter implements SaveConfig {
   /** 平台 */
   readonly platform: string;
   /** 记录模式 */
-  readonly mode: "json" | "msgpack";
+  abstract readonly formatMode: "jsonl" | "msgpack";
   /** 房间号 */
   readonly roomId: string | number;
   /** 时间戳 */
@@ -74,7 +78,7 @@ export class MessageWriter implements SaveConfig {
   /** 记录状态是否已更改 */
   statusChanged: boolean = false;
   /** 按状态分文件 */
-  readonly sliceByStatus: boolean;
+  sliceByStatus: boolean;
   /** 按消息记录数分文件 */
   sliceByCount: number;
   /** 消息记录数 */
@@ -84,13 +88,20 @@ export class MessageWriter implements SaveConfig {
   /** 分块id */
   part: number;
   /** 当前文件路径 */
-  #path: string;
+  #path!: string;
   get path() {
     return this.#path;
   }
+  get count() {
+    return this.#count;
+  }
+  addCount() {
+    this.#count += 1;
+  }
   constructor(
     roomInfo: RecordRoomInfo,
-    { rootPath, sliceByStatus = false, sliceByCount = 0 }: SaveConfig
+    { rootPath, sliceByStatus = false, sliceByCount = 0 }: SaveConfig,
+    { suffix = "" },
   ) {
     const { platform, id, status } = roomInfo;
 
@@ -102,9 +113,11 @@ export class MessageWriter implements SaveConfig {
     this.sliceByStatus = sliceByStatus;
     this.sliceByCount = sliceByCount;
     this.part = 1;
+
+    this.suffix = suffix;
+
     ensureDirSync(rootPath);
-    this.changeFile();
-    this.currentStream.write(JSON.stringify(this.getRecordInfo(roomInfo)));
+    this.changeFile(roomInfo);
   }
   /** 分块 */
   slice() {
@@ -112,62 +125,115 @@ export class MessageWriter implements SaveConfig {
     this.part += 1;
     this.changeFile();
   }
-  /** 按状态分块 */
-  setStatus(status: LiveRoomStatus, timestamp: number) {
-    if (!this.sliceByStatus) return;
-    this.status = status;
-    this.timestamp = timestamp || Date.now();
+  /** 重置信息状态，可用于按状态分块 */
+  reset(newRoomInfo: RecordRoomInfo, { sliceByStatus = this.sliceByStatus }) {
+    this.status = newRoomInfo.status;
+    this.timestamp = newRoomInfo.timestamp || Date.now();
     this.statusChanged = true;
     this.#count = 0;
     this.part = 1;
-    this.changeFile();
+    this.sliceByStatus = sliceByStatus;
+    this.changeFile(newRoomInfo);
   }
   /** 切换文件 */
-  changeFile() {
+  changeFile(newRoomInfo?: RecordRoomInfo) {
+    // 结束旧文件
     const lastStream = this.currentStream;
+    lastStream?.end(
+      newRoomInfo
+        ? this.formatMessage(this.getRecordEndInfo("record:end"))
+        : this.formatMessage(this.getRecordEndInfo("record:slice")),
+    );
+
+    // 写新文件
     this.#path = path.join(this.rootPath, this.getFileId());
     this.currentStream = createWriteStream(
-      path.join(
-        this.rootPath,
-        `${this.prefix}${this.getFileId()}${this.suffix}`
-      ),
+      path.join(this.rootPath, `${this.getFileId()}${this.suffix}`),
       {
-        encoding: "utf8",
-      }
+        encoding: this.formatMode === "msgpack" ? "binary" : "utf8",
+      },
     );
-    lastStream?.end(JSON.stringify(this.getRecordSliceInfo()));
+    newRoomInfo
+      ? this.currentStream.write(
+          this.formatMessage(this.getRecordStartInfo(newRoomInfo)),
+        )
+      : this.currentStream.write(this.formatMessage(this.getRecordPartInfo()));
   }
   /** 写消息 */
-  write(message: any) {
-    this.currentStream.write(JSON.stringify(message) + ",");
+  write(message: any): void {
+    this.currentStream.write(this.formatMessage(message));
     // 保存信息递增
-    this.#count += 1;
+    this.addCount();
     // 若单文件保存信息已达最大值，则切分到下一个文件
-    if (this.sliceByCount && this.sliceByCount <= this.#count) this.slice();
+    if (this.sliceByCount && this.sliceByCount <= this.count) this.slice();
   }
-  getRecordInfo(roomInfo?: RecordRoomInfo) {
+
+  /** 消息格式化 */
+  abstract formatMessage(message: any): string | Uint8Array;
+
+  /** 获取开始信息 */
+  getRecordStartInfo(roomInfo?: RecordRoomInfo): RecordStartInfo {
     return {
-      type: "record",
+      type: "record:start",
       platform: this.platform,
-      id: this.roomId,
+      roomId: this.roomId,
       timestamp: this.timestamp,
+      status: this.status,
       statusChanged: this.statusChanged,
       part: this.part,
-      roomInfo: roomInfo,
+      room: roomInfo,
     };
   }
-  getRecordSliceInfo() {
+  /** 获取结束信息 */
+  getRecordEndInfo(type: "record:slice" | "record:end"): RecordEndInfo {
     return {
-      type: "record_slice",
+      type,
       platform: this.platform,
-      id: this.roomId,
+      roomId: this.roomId,
+      part: this.part,
+    };
+  }
+  /** 获取事件信息 */
+  getRecordEventInfo(
+    type: "record:break" | "record:resume",
+    message: string,
+  ): RecordEventInfo {
+    return {
+      type,
+      platform: this.platform,
+      roomId: this.roomId,
+      message,
+    };
+  }
+  /** 获取切片信息 */
+  getRecordPartInfo(): RecordPartInfo {
+    return {
+      type: "record:part",
+      platform: this.platform,
+      roomId: this.roomId,
       timestamp: this.timestamp,
+      status: this.status,
       statusChanged: this.statusChanged,
       part: this.part,
     };
   }
+
   end() {
     this.currentStream.end();
+  }
+}
+
+class JsonlWriter extends MessageWriter {
+  readonly formatMode = "jsonl";
+  formatMessage(message: any): string {
+    return JSON.stringify(message) + "\n";
+  }
+}
+
+class MsgpackWriter extends MessageWriter {
+  readonly formatMode = "msgpack";
+  formatMessage(message: any): Uint8Array {
+    return encodeMsgpack(message);
   }
 }
 
@@ -190,6 +256,8 @@ class MsgSave {
   paused: boolean;
   /** 列表 */
   list: Map<string, MessageWriter> = new Map();
+  /** 格式 */
+  #format: "jsonl" | "msgpack" = "jsonl";
   constructor(
     {
       getRoomData,
@@ -212,7 +280,7 @@ class MsgSave {
       open?: boolean;
       sliceByStatus?: boolean;
       sliceByCount?: number;
-    }
+    },
   ) {
     this.paused = !open;
     this.getRoomData = getRoomData;
@@ -223,38 +291,82 @@ class MsgSave {
     this.sliceByStatus = sliceByStatus;
     this.sliceByCount = sliceByCount;
   }
+
+  get format() {
+    return this.#format;
+  }
+
+  changeFormat(format: "jsonl" | "msgpack") {
+    this.#format = format;
+    this.list.forEach((writer) => {});
+  }
+
   write(
     message: any,
-    { platform, room }: { platform: string; room: string | number }
+    { platform, roomId }: { platform: string; roomId: string | number },
   ) {
     if (this.paused) return;
-    const roomKey = `${platform}:${room}`;
-    // 获取消息写入器，若不存在则创建一个
+    const roomKey = `${platform}:${roomId}`;
+    // 获取消息写入器，若不存在则创建一个Unknown
     const writer =
-      this.list.get(roomKey) || this.createWriter({ platform, room });
+      this.list.get(roomKey) ||
+      this.createWriter({ platform, roomId }, this.format);
     writer.write(message);
   }
+
+  /** 开始记录 */
   start() {
     this.paused = false;
     this.getRoomList()
       .filter((room) => room.opened)
-      .forEach(({ platform, id }) => this.createWriter({ platform, room: id }));
+      .forEach(({ platform, id }) =>
+        this.createWriter({ platform, roomId: id }, this.format),
+      );
   }
+  /** 暂停记录 */
   pause() {
     this.paused = true;
     this.clearWriter();
   }
+  /** 添加房间 */
+  add({ platform, roomId }: { platform: string; roomId: string | number }) {
+    this.createWriter({ platform, roomId }, this.format);
+  }
+
+  /** 移除消息写入实例 */
+  remove(roomKey: string) {
+    this.list.get(roomKey)?.end();
+    this.list.delete(roomKey);
+  }
+
+  /** 重置实例 */
+  updateStatus(roomKey: string, status: LiveRoomStatus, timestamp: number) {
+    const writer = this.list.get(roomKey);
+    if (writer) {
+      const liveRoomData = this.getRoomData(roomKey) ?? {
+        platform: writer?.platform,
+        id: writer?.roomId,
+        status,
+        timestamp,
+      };
+      writer.reset(liveRoomData, { sliceByStatus: this.sliceByStatus });
+    }
+  }
+
   /** 创建消息写入实例 */
-  createWriter({
-    platform,
-    room,
-  }: {
-    platform: string;
-    room: string | number;
-  }) {
-    const info = this.getRoomData(`${platform}:${room}`) || {
+  createWriter(
+    {
       platform,
-      id: room,
+      roomId,
+    }: {
+      platform: string;
+      roomId: string | number;
+    },
+    mode: "jsonl" | "msgpack",
+  ) {
+    const info = this.getRoomData(`${platform}:${roomId}`) || {
+      platform,
+      id: roomId,
       status: LiveRoomStatus.off,
     };
     const saveInfoConfig = {
@@ -263,16 +375,19 @@ class MsgSave {
       sliceByStatus: this.sliceByStatus,
       sliceByCount: this.sliceByCount,
     };
-    const roomKey = `${platform}:${room}`;
-    const writer = new MessageWriter(info, saveInfoConfig);
+    const roomKey = `${platform}:${roomId}`;
+    const writer =
+      mode === "jsonl"
+        ? new JsonlWriter(info, saveInfoConfig, {
+            suffix: this.suffix + ".jsonl",
+          })
+        : new MsgpackWriter(info, saveInfoConfig, {
+            suffix: this.suffix + ".msgpack",
+          });
     this.list.set(roomKey, writer);
     return writer;
   }
-  /** 移除消息写入实例 */
-  removeWriter(roomKey: string) {
-    this.list.get(roomKey)?.end();
-    this.list.delete(roomKey);
-  }
+  /** 清空所有消息写入实例 */
   clearWriter() {
     this.list.forEach((writer) => writer.end());
     this.list.clear();

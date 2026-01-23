@@ -1,18 +1,18 @@
 import { FloatingLive } from "floating-live";
-import ConsoleMessage from "@floating-live/plugin-console-message";
+import ConsoleMessage from "../packages/plugin-console-message";
 // import { messageSave, messageSaveRaw } from "../packages/save";
 import { PluginBilibili } from "../packages/bilibili";
 import { PluginAcfun } from "../packages/acfun";
-import ConsoleEvent from "@floating-live/plugin-console-event";
-import Auth from "@floating-live/plugin-auth";
-import Save from "@floating-live/plugin-save";
-import PluginPlatform from "@floating-live/platform";
+import ConsoleEvent from "../packages/plugin-console-event";
+import Auth from "../packages/plugin-auth";
+import Save from "../packages/plugin-save";
+import PluginPlatform from "../packages/platform";
 
 const options = {
   rooms: [
     {
       platform: "bilibili",
-      id: 24371027,
+      id: 1852504554,
     },
   ],
   open: true,

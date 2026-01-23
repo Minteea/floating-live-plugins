@@ -241,13 +241,14 @@ __metadata:
   resolution: "@floating-live/acfun@workspace:packages/acfun"
   dependencies:
     "@floating-live/cookies": "npm:^0.1.0"
-    "@floating-live/platform": "npm:^0.16.2"
+    "@floating-live/platform": "workspace:*"
     "@types/websocket": "npm:^1.0.5"
     "@types/ws": "npm:^8.5.3"
     acfun-live-danmaku: "npm:^0.8.0"
+    floating-live: "npm:^0.16.6"
     rimraf: "npm:^3.0.2"
     tsc-alias: "npm:^1.8.16"
-    typescript: "npm:^5.8.3"
+    typescript: "npm:^5.9.3"
   peerDependencies:
     floating-live: ^0.16.0
   languageName: unknown
@@ -263,10 +264,11 @@ __metadata:
     "@types/websocket": "npm:^1.0.5"
     "@types/ws": "npm:^8.5.3"
     bilibili-live-danmaku: "npm:^0.7.13"
+    floating-live: "npm:^0.16.6"
     md5: "npm:^2.3.0"
     rimraf: "npm:^3.0.2"
     tsc-alias: "npm:^1.8.16"
-    typescript: "npm:^5.8.3"
+    typescript: "npm:^5.9.3"
   peerDependencies:
     floating-live: ^0.16.0
   languageName: unknown
@@ -279,13 +281,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@floating-live/platform@npm:^0.16.2, @floating-live/platform@workspace:packages/platform":
+"@floating-live/platform@npm:^0.16.2, @floating-live/platform@workspace:*, @floating-live/platform@workspace:packages/platform":
   version: 0.0.0-use.local
   resolution: "@floating-live/platform@workspace:packages/platform"
   dependencies:
     rimraf: "npm:^3.0.2"
     tsc-alias: "npm:^1.8.16"
-    typescript: "npm:^5.8.3"
+    typescript: "npm:^5.9.3"
   peerDependencies:
     floating-live: ^0.16.0
   languageName: unknown
@@ -300,7 +302,7 @@ __metadata:
     "@types/ws": "npm:^8.5.3"
     rimraf: "npm:^3.0.2"
     tsc-alias: "npm:^1.8.16"
-    typescript: "npm:^5.8.3"
+    typescript: "npm:^5.9.3"
   peerDependencies:
     events: ^3.3.0
     floating-live: ^0.15.6
@@ -314,7 +316,7 @@ __metadata:
     chalk: "npm:^5.4.1"
     rimraf: "npm:^3.0.2"
     tsc-alias: "npm:^1.8.16"
-    typescript: "npm:^5.8.3"
+    typescript: "npm:^5.9.3"
   peerDependencies:
     events: ^3.3.0
     floating-live: ^0.16.0
@@ -328,7 +330,7 @@ __metadata:
     chalk: "npm:^5.4.1"
     rimraf: "npm:^3.0.2"
     tsc-alias: "npm:^1.8.16"
-    typescript: "npm:^5.8.3"
+    typescript: "npm:^5.9.3"
   peerDependencies:
     events: ^3.3.0
     floating-live: ^0.16.0
@@ -339,11 +341,12 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@floating-live/plugin-save@workspace:packages/plugin-save"
   dependencies:
+    "@msgpack/msgpack": "npm:^3.1.3"
     "@types/fs-extra": "npm:^9.0.13"
     fs-extra: "npm:^11.1.0"
     rimraf: "npm:^3.0.2"
     tsc-alias: "npm:^1.8.16"
-    typescript: "npm:^5.8.3"
+    typescript: "npm:^5.9.3"
   peerDependencies:
     events: ^3.3.0
     floating-live: ^0.16.0
@@ -357,12 +360,12 @@ __metadata:
     "@types/fs-extra": "npm:^9.0.13"
     "@types/node": "npm:^22.13.14"
     dotenv: "npm:^16.5.0"
-    floating-live: "npm:^0.16.4"
+    floating-live: "npm:^0.16.6"
     lerna: "npm:^8.2.2"
     rimraf: "npm:^3.0.2"
     tsc-alias: "npm:^1.8.16"
     tsx: "npm:^4.19.3"
-    typescript: "npm:^5.8.3"
+    typescript: "npm:^5.9.3"
   peerDependencies:
     "@floating-live/cookies": ^0.1.0
     floating-live: ^0.16.0
@@ -375,7 +378,7 @@ __metadata:
   dependencies:
     rimraf: "npm:^3.0.2"
     tsc-alias: "npm:^1.8.16"
-    typescript: "npm:^5.8.3"
+    typescript: "npm:^5.9.3"
   peerDependencies:
     floating-live: ^0.16.0
   languageName: unknown
@@ -493,6 +496,13 @@ __metadata:
     yargs: "npm:17.7.2"
     yargs-parser: "npm:21.1.1"
   checksum: 10c0/3cd1c66137bba8cad9ad24309ec59aefba0423ec70000bcaaf048fce099f7e55604ba9a7894bf43bf8ef43460726c65440d22788d4810337ed2ac4e0cba287e6
+  languageName: node
+  linkType: hard
+
+"@msgpack/msgpack@npm:^3.1.3":
+  version: 3.1.3
+  resolution: "@msgpack/msgpack@npm:3.1.3"
+  checksum: 10c0/1fa9a760a58e64e121561d17977b680198ff24d83e951df3896f8639d06824f2cba20af92a19940461e0d5d6dc696bd01222bd901164759432eadd0f482d0816
   languageName: node
   linkType: hard
 
@@ -2567,10 +2577,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"floating-live@npm:^0.16.4":
-  version: 0.16.4
-  resolution: "floating-live@npm:0.16.4"
-  checksum: 10c0/fa49169ea3e026c481f2da556b06d851b9398a8683a5d83bd7c25ab3d40d00505ae1fa8bd24eee4d6390c4aae08d673dd4f85f4303a245b83c856a0fe51f0831
+"floating-live@npm:^0.16.6":
+  version: 0.16.6
+  resolution: "floating-live@npm:0.16.6"
+  checksum: 10c0/186bfc0ab09d1a5b44636de5213d6ed4e51057f9c33f625fd085fed6a9136ad51923eb8660eee738b4a2eb61b765a2c9d374647bcbc7c03794a88be16c1eb719
   languageName: node
   linkType: hard
 
@@ -5887,13 +5897,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:^5.8.3":
-  version: 5.8.3
-  resolution: "typescript@npm:5.8.3"
+"typescript@npm:^5.9.3":
+  version: 5.9.3
+  resolution: "typescript@npm:5.9.3"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 10c0/5f8bb01196e542e64d44db3d16ee0e4063ce4f3e3966df6005f2588e86d91c03e1fb131c2581baf0fb65ee79669eea6e161cd448178986587e9f6844446dbb48
+  checksum: 10c0/6bd7552ce39f97e711db5aa048f6f9995b53f1c52f7d8667c1abdc1700c68a76a308f579cd309ce6b53646deb4e9a1be7c813a93baaf0a28ccd536a30270e1c5
   languageName: node
   linkType: hard
 
@@ -5907,13 +5917,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@npm%3A^5.8.3#optional!builtin<compat/typescript>":
-  version: 5.8.3
-  resolution: "typescript@patch:typescript@npm%3A5.8.3#optional!builtin<compat/typescript>::version=5.8.3&hash=5786d5"
+"typescript@patch:typescript@npm%3A^5.9.3#optional!builtin<compat/typescript>":
+  version: 5.9.3
+  resolution: "typescript@patch:typescript@npm%3A5.9.3#optional!builtin<compat/typescript>::version=5.9.3&hash=5786d5"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 10c0/39117e346ff8ebd87ae1510b3a77d5d92dae5a89bde588c747d25da5c146603a99c8ee588c7ef80faaf123d89ed46f6dbd918d534d641083177d5fac38b8a1cb
+  checksum: 10c0/ad09fdf7a756814dce65bc60c1657b40d44451346858eea230e10f2e95a289d9183b6e32e5c11e95acc0ccc214b4f36289dcad4bf1886b0adb84d711d336a430
   languageName: node
   linkType: hard
 

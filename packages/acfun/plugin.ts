@@ -11,7 +11,6 @@ import {
   requestTokenGet,
   requestVisitorLogin,
 } from "acfun-live-danmaku";
-import type {} from "@floating-live/platform";
 import { Cookies } from "@floating-live/cookies";
 
 declare module "floating-live" {
@@ -48,7 +47,7 @@ export class PluginAcfun extends BasePlugin {
         const room = new RoomAcfun(Number(id), config);
         room.whenInit.catch((e) => console.error(e));
         return room;
-      }
+      },
     );
 
     ctx.registerCommand("acfun.room.data", async (e, id: string | number) => {
@@ -83,7 +82,7 @@ export class PluginAcfun extends BasePlugin {
         `https://live.acfun.cn/rest/pc-direct/user/userInfo?userId=${authorId}`,
         {
           method: "GET",
-        }
+        },
       ).then((response) => response.json());
       return {
         platform: "acfun",
@@ -111,7 +110,7 @@ export class PluginAcfun extends BasePlugin {
     });
 
     ctx.registerCommand("acfun.credentials.check", (e, credentials) =>
-      this.checkCredentials(credentials)
+      this.checkCredentials(credentials),
     );
   }
   async checkCredentials(credentials: string) {
@@ -125,9 +124,9 @@ export class PluginAcfun extends BasePlugin {
             new this.Error("credentials:check_failed", {
               message: "无法获取必要cookie信息",
               cause: e,
-            })
-          )
-        ))!
+            }),
+          ),
+        ))!,
       );
     }
 
@@ -140,8 +139,8 @@ export class PluginAcfun extends BasePlugin {
           new this.Error("credentials:check_failed", {
             message: "获取token失败(登录模式)",
             cause: e,
-          })
-        )
+          }),
+        ),
       );
       const { userId } = result!;
       return {

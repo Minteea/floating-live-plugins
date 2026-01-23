@@ -21,15 +21,16 @@
     "acfun-live-danmaku": "^0.8.0"
   },
   "devDependencies": {
-    "@floating-live/platform": "^0.16.2",
+    "@floating-live/platform": "workspace:*",
     "@types/websocket": "^1.0.5",
     "@types/ws": "^8.5.3",
+    "floating-live": "^0.16.6",
     "rimraf": "^3.0.2",
     "tsc-alias": "^1.8.16",
-    "typescript": "^5.8.3"
+    "typescript": "^5.9.3"
   },
   "peerDependencies": {
-    "floating-live": "^0.16.0"
+    "floating-live": "^0.16.6"
   },
   "gitHead": "eb7c02f5dba6b6abc223b747cdf391942ae9e734"
 }

@@ -7,7 +7,7 @@ import {
   AppPluginExposesMap,
   ValueContext,
 } from "floating-live";
-import MsgSave from "./msgSave";
+import MsgWriter from "./msgWriter";
 import path from "node:path";
 
 declare module "floating-live" {
@@ -27,8 +27,8 @@ interface PluginSaveOptions {
 
 export class Save extends BasePlugin {
   static pluginName = "save";
-  messageSave: MsgSave;
-  rawSave: MsgSave;
+  messageSave: MsgWriter;
+  rawSave: MsgWriter;
   path: string;
   room: AppPluginExposesMap["room"] | null = null;
   private valueContexts: {
@@ -49,21 +49,29 @@ export class Save extends BasePlugin {
       };
     });
 
-    this.messageSave = new MsgSave(
-      { getRoomData: (key) => this.room?.data(key) },
+    this.messageSave = new MsgWriter(
+      {
+        getRoomData: (key) => this.room?.data(key),
+        getRoomList: () => this.room?.getList() || [],
+      },
       {
         filePath: path.resolve(this.rootPath, this.path),
+        suffix: ".rec",
         sliceByStatus: true,
         open: !!config.message,
-      }
+      },
     );
-    this.rawSave = new MsgSave(
-      { getRoomData: (key) => this.room?.data(key) },
+    this.rawSave = new MsgWriter(
+      {
+        getRoomData: (key) => this.room?.data(key),
+        getRoomList: () => this.room?.getList() || [],
+      },
       {
         filePath: path.resolve(this.rootPath, this.path),
         suffix: ".raw",
+        sliceByStatus: true,
         open: !!config.raw,
-      }
+      },
     );
 
     ctx.on("live:message", ({ message: msg }) => {
@@ -72,25 +80,12 @@ export class Save extends BasePlugin {
     ctx.on("live:raw", ({ platform, roomId, data }) => {
       this.rawSave.write(data, { platform, roomId });
     });
-    // 直播状态改变时，更新保存信息
+    // 直播状态改变时，更新保存器状态信息
     ctx.on("room:status", ({ status, timestamp, key }) => {
-      const { platform, id } =
-        this.room?.data(key) ||
-        (() => {
-          const [platform, id] = key.split(":");
-          return { platform, id };
-        })();
-      const saveInfo = {
-        platform,
-        roomId: id,
-        status,
-        timestamp: timestamp || 0,
-        statusChanged: true,
-      };
-      this.messageSave.setSaveInfo(saveInfo);
-      this.rawSave.setSaveInfo(saveInfo);
+      this.messageSave.updateStatus(key, status, timestamp);
+      this.rawSave.updateStatus(key, status, timestamp);
     });
-    // 打开直播间时，设置保存信息
+    // 打开直播间时，添加保存器实例
     ctx.on("room:open", ({ room }) => {
       const { platform, id, status } = room;
       const saveInfo = {
@@ -100,13 +95,13 @@ export class Save extends BasePlugin {
         timestamp: Date.now(),
         statusChanged: false,
       };
-      this.messageSave.setSaveInfo(saveInfo);
-      this.rawSave.setSaveInfo(saveInfo);
+      this.messageSave.add(saveInfo);
+      this.rawSave.add(saveInfo);
     });
-    // 关闭直播间时，移除保存信息
+    // 关闭直播间时，移除保存器实例
     ctx.on("room:close", ({ key }) => {
-      this.messageSave.removeSaveInfo(key);
-      this.rawSave.removeSaveInfo(key);
+      this.messageSave.remove(key);
+      this.rawSave.remove(key);
     });
 
     this.valueContexts = {

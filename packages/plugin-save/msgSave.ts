@@ -153,11 +153,11 @@ class MsgSave {
     if (!saveInfo.exist) this.createFile(roomKey);
     const file = path.join(
       this.path,
-      `${this.prefix}${saveInfo.fileId}${this.suffix}.floatrec`
+      `${this.prefix}${saveInfo.fileId}${this.suffix}.jsonl`
     );
     fs.writeFile(
       file,
-      JSON.stringify(message) + ",\n",
+      JSON.stringify(message) + "\n",
       { encoding: "utf8", flag: "a" },
       (err) => {
         if (err) throw err;
@@ -226,7 +226,7 @@ class MsgSave {
     const saveInfo = this.list.get(roomKey)!;
     const file = path.join(
       this.path,
-      `${this.prefix}${saveInfo.fileId}${this.suffix}.floatrec`
+      `${this.prefix}${saveInfo.fileId}${this.suffix}.jsonl`
     );
     // 如果文件已存在，则将文件标记为已存在，否则创建一个文件并写入record_info信息
     if (fs.existsSync(file)) {
@@ -235,7 +235,7 @@ class MsgSave {
     }
     fs.ensureFileSync(file);
     const message = {
-      type: "record_info",
+      type: "record:start",
       platform: saveInfo.platform,
       room: saveInfo.roomId,
       timestamp: saveInfo.timestamp,
@@ -244,7 +244,7 @@ class MsgSave {
       part: saveInfo.part,
       roomInfo: this.getRoomData(roomKey),
     };
-    fs.writeFileSync(file, JSON.stringify(message) + ",\n", {
+    fs.writeFileSync(file, JSON.stringify(message) + "\n", {
       encoding: "utf8",
       flag: "a",
     });

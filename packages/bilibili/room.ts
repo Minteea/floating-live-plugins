@@ -87,6 +87,9 @@ export class RoomBilibili extends LiveRoom implements BilibiliRoomData {
   /** 是否初始化 */
   public whenInit: Promise<RoomBilibili>;
 
+  /** 重连次数 */
+  public reconnectCount = 0;
+
   /** 连接凭证 */
   #tokens?: ConnectTokens;
   /** 用户cookie */
@@ -273,16 +276,52 @@ export class RoomBilibili extends LiveRoom implements BilibiliRoomData {
     this.reconnecting = true;
     const lastClient = this.client;
     this.initClient();
+    console.log("reconnect - " + Date.now());
+    // 控制连接事件成功或失败
+    const connectionAbortController = new AbortController();
     // 重连成功后，关闭上一个连接
     this.client?.addEventListener(
       "open",
       () => {
+        connectionAbortController.abort();
         lastClient?.[symbolAbortController].abort();
-        lastClient?.close();
+        lastClient && lastClient.ws.readyState < 2 && lastClient?.close();
+
         this.reconnecting = false;
+        this.reconnectCount = 0;
       },
-      { once: true },
+      { once: true, signal: connectionAbortController.signal },
     );
+    // 若重连失败，关闭该连接、恢复上一个连接并重连
+    this.client?.addEventListener(
+      "error",
+      () => {
+        connectionAbortController.abort();
+        const failedClient = this.client;
+        this.client = lastClient;
+
+        failedClient?.[symbolAbortController].abort();
+        failedClient && failedClient.ws.readyState < 2 && failedClient?.close();
+
+        this.reconnecting = false;
+        this.reconnectCount += 1;
+        this.safeReconnect();
+      },
+      { once: true, signal: connectionAbortController.signal },
+    );
+  }
+
+  /** 间隔安全重连，等待一定连接间隔后可重连 */
+  safeReconnect() {
+    const timeout = this.lastConnectionTime + this.connectInterval - Date.now();
+    if (timeout > 0) {
+      const t = setTimeout(() => {
+        this.reconnect();
+        clearTimeout(t);
+      }, timeout);
+    } else {
+      this.reconnect();
+    }
   }
 
   private emitConnention(status: LiveConnectionStatus) {
@@ -345,17 +384,8 @@ export class RoomBilibili extends LiveRoom implements BilibiliRoomData {
         this.opened && this.emitConnention(LiveConnectionStatus.disconnected);
         // 自动重连
         if (this.opened && this.autoReconnect) {
-          const timeout =
-            this.lastConnectionTime + this.connectInterval - Date.now();
-          this.lastConnectionTime = Date.now();
-          if (timeout > 0) {
-            const t = setTimeout(() => {
-              this.reconnect();
-              clearTimeout(t);
-            }, timeout);
-          } else {
-            this.reconnect();
-          }
+          this.reconnectCount += 1;
+          this.safeReconnect();
         }
       },
       { signal },

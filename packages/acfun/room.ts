@@ -110,8 +110,11 @@ export class RoomAcfun extends LiveRoom {
   /** 自动重连 */
   public autoReconnect: boolean;
 
-  /** 是否初始化 */
+  /** 等待初始化 */
   public whenInit: Promise<RoomAcfun>;
+
+  /** 重连次数 */
+  public reconnectCount = 0;
 
   /** 连接凭证 */
   #tokens?: ConnectTokens | (LoginInfo & { did: string });
@@ -414,16 +417,51 @@ export class RoomAcfun extends LiveRoom {
     const lastClient = this.client;
     if (!lastClient) return;
     this.initClient();
+    // 控制连接事件成功或失败
+    const connectionAbortController = new AbortController();
     // 重连成功后，关闭上一个连接
     this.client?.addEventListener(
       "open",
       () => {
+        connectionAbortController.abort();
         lastClient[symbolAbortController].abort();
-        lastClient.close();
+        lastClient && lastClient.ws.readyState < 2 && lastClient?.close();
+
         this.reconnecting = false;
+        this.reconnectCount = 0;
       },
-      { once: true },
+      { once: true, signal: connectionAbortController.signal },
     );
+    // 若重连失败，关闭该连接、恢复上一个连接并重连
+    this.client?.addEventListener(
+      "error",
+      () => {
+        connectionAbortController.abort();
+        const failedClient = this.client;
+        this.client = lastClient;
+
+        failedClient?.[symbolAbortController].abort();
+        failedClient && failedClient.ws.readyState < 2 && failedClient?.close();
+
+        this.reconnecting = false;
+        this.reconnectCount += 1;
+        this.safeReconnect();
+      },
+      { once: true, signal: connectionAbortController.signal },
+    );
+  }
+
+  /** 间隔安全重连，等待一定连接间隔后可重连 */
+  safeReconnect() {
+    const timeout = this.lastConnectionTime + this.connectInterval - Date.now();
+    if (timeout > 0) {
+      const t = setTimeout(() => {
+        this.reconnect();
+        clearTimeout(t);
+      }, timeout);
+    } else {
+      this.reconnect();
+    }
   }
 
   /** 打开直播弹幕客户端 */

@@ -124,7 +124,7 @@ export class RoomAcfun extends LiveRoom {
 
   /** 自定义fetchData */
   customFetchData?: (
-    id: number | string
+    id: number | string,
   ) => Promise<
     LiveRoomData & { availableTickets: string[]; enterRoomAttach: string }
   >;
@@ -136,7 +136,7 @@ export class RoomAcfun extends LiveRoom {
   /** 自定义fetch函数 */
   fetch: (
     input: RequestInfo | URL,
-    init?: RequestInit | undefined
+    init?: RequestInit | undefined,
   ) => Promise<Response> = fetch;
 
   constructor(id: number, options: RoomOptions = {}) {
@@ -144,7 +144,7 @@ export class RoomAcfun extends LiveRoom {
     this.id = id; // 直播间号
     this.connectInterval = options.connectInterval ?? 500;
     this.connectTimeout = options.connectTimeout ?? 45000;
-    this.autoReconnect = options.autoReconnect ?? false;
+    this.autoReconnect = options.autoReconnect ?? true;
 
     this.#tokens = options.tokens;
     this.#cookies = new Cookies<any>(options.credentials);
@@ -225,7 +225,7 @@ export class RoomAcfun extends LiveRoom {
         "acfun.midground.api_st": !isVisitor ? st : undefined,
         "acfun.api.visitor_st": isVisitor ? st : undefined,
       },
-      this.#getFetchOptions()
+      this.#getFetchOptions(),
     ).catch(() => ({
       liveId: "",
       caption: "",
@@ -281,7 +281,7 @@ export class RoomAcfun extends LiveRoom {
         "acfun.midground.api_st": !isVisitor ? st : undefined,
         "acfun.api.visitor_st": isVisitor ? st : undefined,
       },
-      this.#getFetchOptions()
+      this.#getFetchOptions(),
     ).catch((e) => {
       console.log(e);
       return [];
@@ -327,7 +327,7 @@ export class RoomAcfun extends LiveRoom {
         await requestDidCookie({
           ...this.#getFetchOptions(),
           cookie: cookies.toString(),
-        })
+        }),
       );
     }
     this.#cookies = cookies;
@@ -346,7 +346,7 @@ export class RoomAcfun extends LiveRoom {
   /** 获取用户tokens */
   async fetchUserTokens(credentials: string = "") {
     const cookies = new Cookies<"_did" | "acPasstoken" | "auth_key">(
-      credentials
+      credentials,
     );
     const did = cookies.get("_did");
     const acPasstoken = cookies.get("acPasstoken");
@@ -373,9 +373,8 @@ export class RoomAcfun extends LiveRoom {
 
   /** 获取tokens */
   async fetchTokens(credentials: string = ""): Promise<ConnectTokens> {
-    const { did, st, userId, security } = await this.fetchUserTokens(
-      credentials
-    );
+    const { did, st, userId, security } =
+      await this.fetchUserTokens(credentials);
     const isVisitor = userId >= 1000000000000000;
     const { availableTickets, enterRoomAttach, liveId } =
       await getStartPlayInfo(
@@ -386,7 +385,7 @@ export class RoomAcfun extends LiveRoom {
           "acfun.midground.api_st": !isVisitor ? st : undefined,
           "acfun.api.visitor_st": isVisitor ? st : undefined,
         },
-        { ...this.#getFetchOptions(), cookie: credentials }
+        { ...this.#getFetchOptions(), cookie: credentials },
       );
     return {
       did,
@@ -423,7 +422,7 @@ export class RoomAcfun extends LiveRoom {
         lastClient.close();
         this.reconnecting = false;
       },
-      { once: true }
+      { once: true },
     );
   }
 
@@ -474,7 +473,7 @@ export class RoomAcfun extends LiveRoom {
       () => {
         this.emitConnention(LiveConnectionStatus.connected);
       },
-      { signal }
+      { signal },
     );
     client.addEventListener(
       "close",
@@ -495,7 +494,7 @@ export class RoomAcfun extends LiveRoom {
           }
         }
       },
-      { signal }
+      { signal },
     );
 
     client.addEventListener(
@@ -503,7 +502,7 @@ export class RoomAcfun extends LiveRoom {
       () => {
         this.emitConnention(LiveConnectionStatus.entered);
       },
-      { signal }
+      { signal },
     );
 
     client.addEventListener(
@@ -514,7 +513,7 @@ export class RoomAcfun extends LiveRoom {
         msg && this.emitMessage(msg);
         this.emitRaw({ ...e });
       },
-      { signal }
+      { signal },
     );
     client.addEventListener(
       "ActionSignal",
@@ -524,7 +523,7 @@ export class RoomAcfun extends LiveRoom {
         msg && this.emitMessage(msg);
         this.emitRaw({ ...e });
       },
-      { signal }
+      { signal },
     );
     client.addEventListener(
       "NotifySignal",
@@ -534,7 +533,7 @@ export class RoomAcfun extends LiveRoom {
         msg && this.emitMessage(msg);
         this.emitRaw({ ...e });
       },
-      { signal }
+      { signal },
     );
     client.addEventListener(
       "StatusChanged",
@@ -544,7 +543,7 @@ export class RoomAcfun extends LiveRoom {
         msg && this.emitMessage(msg);
         this.emitRaw({ ...e });
       },
-      { signal }
+      { signal },
     );
     this.client = client;
   }

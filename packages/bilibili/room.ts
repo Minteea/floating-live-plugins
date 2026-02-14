@@ -109,19 +109,19 @@ export class RoomBilibili extends LiveRoom implements BilibiliRoomData {
   /** 自定义fetchTokens */
   customFetchTokens?: (
     roomId: number,
-    credentials: string
+    credentials: string,
   ) => Promise<ConnectTokens>;
 
   constructor(
     /** 房间id */
     id: number,
-    options: RoomOptions = {}
+    options: RoomOptions = {},
   ) {
     super();
     this.id = id;
     this.connectInterval = options.connectInterval ?? 500;
     this.connectTimeout = options.connectTimeout ?? 45000;
-    this.autoReconnect = options.autoReconnect ?? false;
+    this.autoReconnect = options.autoReconnect ?? true;
     this.#tokens = options.tokens;
 
     this.#apiClient = new BilibiliApiClientEx({
@@ -250,9 +250,7 @@ export class RoomBilibili extends LiveRoom implements BilibiliRoomData {
     const buvid = this.#apiClient.cookies.get("buvid3");
     const uid = parseInt(this.#apiClient.cookies.get("DedeUserID"));
     const { key } = await parseLiveConfig(
-      (
-        await this.#apiClient.xliveGetDanmuInfo({ id: this.roomId })
-      ).data
+      (await this.#apiClient.xliveGetDanmuInfo({ id: this.roomId })).data,
     );
     return {
       uid,
@@ -283,7 +281,7 @@ export class RoomBilibili extends LiveRoom implements BilibiliRoomData {
         lastClient?.close();
         this.reconnecting = false;
       },
-      { once: true }
+      { once: true },
     );
   }
 
@@ -338,7 +336,7 @@ export class RoomBilibili extends LiveRoom implements BilibiliRoomData {
         // 连接到服务器
         this.opened && this.emitConnention(LiveConnectionStatus.connected);
       },
-      { signal }
+      { signal },
     );
     client.addEventListener(
       "close",
@@ -359,7 +357,7 @@ export class RoomBilibili extends LiveRoom implements BilibiliRoomData {
           }
         }
       },
-      { signal }
+      { signal },
     );
     client.addEventListener(
       "CONNECT_SUCCESS",
@@ -367,7 +365,7 @@ export class RoomBilibili extends LiveRoom implements BilibiliRoomData {
         // 连接到直播间
         this.emitConnention(LiveConnectionStatus.entered);
       },
-      { signal }
+      { signal },
     );
     client.addEventListener(
       "MESSAGE",
@@ -376,7 +374,7 @@ export class RoomBilibili extends LiveRoom implements BilibiliRoomData {
         m && this.emitMessage(m);
         this.emitRaw(data);
       },
-      { signal }
+      { signal },
     );
     this.client = client;
   }

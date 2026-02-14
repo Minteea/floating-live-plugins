@@ -6,7 +6,6 @@ import { PluginAcfun } from "../packages/acfun";
 import ConsoleEvent from "../packages/plugin-console-event";
 import Auth from "../packages/plugin-auth";
 import Save from "../packages/plugin-save";
-import PluginPlatform from "../packages/platform";
 
 const options = {
   rooms: [
@@ -39,7 +38,6 @@ const floating = new FloatingLive();
 function registerPlugin() {
   return Promise.all([
     floating.register(ConsoleEvent),
-    floating.register(PluginPlatform),
     floating.register(Auth),
     floating.register(PluginBilibili),
     floating.register(PluginAcfun),
@@ -66,7 +64,7 @@ async function beforeInit() {
   const auth = await floating.call(
     "auth",
     "bilibili",
-    getEnv("API_COOKIES_BILIBILI") || "" // "SESSDATA=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    getEnv("API_COOKIES_BILIBILI") || "", // "SESSDATA=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
   );
 
   console.log(auth);

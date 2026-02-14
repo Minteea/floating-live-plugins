@@ -347,6 +347,7 @@ export class RoomBilibili extends LiveRoom implements BilibiliRoomData {
         if (this.opened && this.autoReconnect) {
           const timeout =
             this.lastConnectionTime + this.connectInterval - Date.now();
+          this.lastConnectionTime = Date.now();
           if (timeout > 0) {
             const t = setTimeout(() => {
               this.reconnect();

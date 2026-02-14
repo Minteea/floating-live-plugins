@@ -484,6 +484,7 @@ export class RoomAcfun extends LiveRoom {
         if (this.opened && this.autoReconnect) {
           const timeout =
             this.lastConnectionTime + this.connectInterval - Date.now();
+          this.lastConnectionTime = Date.now();
           if (timeout > 0) {
             const t = setTimeout(() => {
               this.reconnect();

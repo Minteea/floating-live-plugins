@@ -1,11 +1,10 @@
 import { FloatingLive } from "floating-live";
-import ConsoleMessage from "../packages/plugin-console-message";
-// import { messageSave, messageSaveRaw } from "../packages/save";
-import { PluginBilibili } from "../packages/bilibili";
-import { PluginAcfun } from "../packages/acfun";
-import ConsoleEvent from "../packages/plugin-console-event";
-import Auth from "../packages/plugin-auth";
-import Save from "../packages/plugin-save";
+import ConsoleMessage from "../packages/plugin-console-message/src";
+import { PluginBilibili } from "../packages/bilibili/src";
+import { PluginAcfun } from "../packages/acfun/src";
+import ConsoleEvent from "../packages/plugin-console-event/src";
+import Auth from "../packages/plugin-auth/src";
+import Save from "../packages/plugin-save/src";
 
 const options = {
   rooms: [

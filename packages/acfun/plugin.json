@@ -1,0 +1,7 @@
+{
+  "name": "acfun",
+  "author": "FloatingLive",
+  "version": "0.16.11",
+  "description": "AcFun plugin for FloatingLive",
+  "main": "plugin.js"
+}

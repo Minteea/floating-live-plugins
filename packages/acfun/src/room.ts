@@ -262,6 +262,7 @@ export class RoomAcfun extends LiveRoom {
       opened: false,
       availableTickets,
       enterRoomAttach,
+      valid: true,
     };
   }
 

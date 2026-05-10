@@ -42,8 +42,8 @@ export class Save extends BasePlugin {
     this.rootPath = path.resolve(config?.rootPath || ".");
     this.path = config.path || "";
 
-    ctx.whenRegister("room", (room) => {
-      this.room = room;
+    ctx.whenRegister("room", () => {
+      this.room = ctx.getPluginExposes("room");
       return () => {
         this.room = null;
       };

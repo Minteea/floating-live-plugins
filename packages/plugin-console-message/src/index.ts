@@ -13,8 +13,8 @@ export class ConsoleMessage extends BasePlugin {
   static pluginName = "consoleMessage";
   private pluginPlatform?: AppPluginExposesMap["platform"];
   init() {
-    this.ctx.whenRegister("platform", (platform) => {
-      this.pluginPlatform = platform;
+    this.ctx.whenRegister("platform", () => {
+      this.pluginPlatform = this.ctx.getPluginExposes("platform");
       return () => {
         this.pluginPlatform = undefined;
       };
@@ -59,8 +59,7 @@ export class ConsoleMessage extends BasePlugin {
         let user = this.getUserInfo(message);
         let content = message.info.content;
         log(
-          `${user}${chalk.dim(":")} ${
-            message.info.image ? chalk.dim("[img]") : ""
+          `${user}${chalk.dim(":")} ${message.info.image ? chalk.dim("[img]") : ""
           }${content}`,
         );
         break;
@@ -97,8 +96,7 @@ export class ConsoleMessage extends BasePlugin {
         let second = Math.round(message.info.duration / 1000);
         log(
           chalk.bold(
-            `${chalk.cyan(`[SC(${second}s)]`)} ${user}${chalk.dim(":")} ${
-              message.info.content
+            `${chalk.cyan(`[SC(${second}s)]`)} ${user}${chalk.dim(":")} ${message.info.content
             }`,
           ),
         );
@@ -123,8 +121,8 @@ export class ConsoleMessage extends BasePlugin {
         let user = this.getUserInfo(message);
         let operator = message.info.operator?.type
           ? { [UserType.admin]: "房管", [UserType.anchor]: "主播" }[
-              message.info.operator.type
-            ]
+          message.info.operator.type
+          ]
           : "";
         log(`${user} 已被${operator}禁言`);
         break;

@@ -69,11 +69,12 @@ export class PluginBilibili extends BasePlugin {
   apiClient = new BilibiliApiClientEx();
   room: AppPluginExposesMap["room"] | null = null;
   init(ctx: PluginContext) {
-    ctx.whenRegister("platform", (platform) => {
+    ctx.whenRegister("platform", () => {
+      const platform = ctx.getPluginExposes("platform")
       platform.register("bilibili", platformInfo, ctx.signal);
     });
-    ctx.whenRegister("room", (room) => {
-      this.room = room;
+    ctx.whenRegister("room", () => {
+      this.room = ctx.getPluginExposes("room");
       return () => {
         this.room = null;
       };

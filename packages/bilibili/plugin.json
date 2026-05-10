@@ -1,0 +1,7 @@
+{
+  "name": "bilibili",
+  "author": "FloatingLive",
+  "version": "0.16.17",
+  "description": "Bilibili plugin for FloatingLive",
+  "main": "plugin.js"
+}

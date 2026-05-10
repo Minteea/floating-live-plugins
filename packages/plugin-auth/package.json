@@ -2,31 +2,39 @@
   "name": "@floating-live/plugin-auth",
   "version": "0.16.5",
   "type": "module",
-  "main": "index.js",
-  "types": "index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "author": "Minteea",
   "license": "MIT",
   "scripts": {
     "check": "tsc --noEmit",
-    "clear": "rimraf *.js *.d.ts --glob",
+    "clear": "rimraf ./dist",
     "build": "npm run clear && tsc --build && tsc-alias",
     "prepack": "npm run build",
-    "postpack": "npm run clear"
+    "postpack": "npm run clear",
+    "build:plugin": "vite build --config plugin.vite.config.ts",
+    "version": "floating-live-plugin-tools version"
   },
   "publishConfig": {
     "access": "public"
   },
   "devDependencies": {
+    "@floating-live/plugin-tools": "^0.1.0-alpha.1",
     "@types/fs-extra": "^9.0.13",
     "@types/websocket": "^1.0.5",
     "@types/ws": "^8.5.3",
+    "floating-live": "^0.17.0-alpha.1",
     "rimraf": "^3.0.2",
     "tsc-alias": "^1.8.16",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vite": "^8.0.11"
   },
   "peerDependencies": {
-    "events": "^3.3.0",
-    "floating-live": "^0.15.6"
+    "floating-live": "0.17.0-alpha.1"
   },
+  "files": [
+    "dist",
+    "plugin.json"
+  ],
   "gitHead": "eb7c02f5dba6b6abc223b747cdf391942ae9e734"
 }

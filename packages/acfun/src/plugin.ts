@@ -37,7 +37,8 @@ export class PluginAcfun extends BasePlugin {
   static pluginName = "acfun";
   private tokens: { did: string; userId: number; st: string } | null = null;
   init(ctx: PluginContext) {
-    ctx.whenRegister("platform", (platform) => {
+    ctx.whenRegister("platform", () => {
+      const platform = ctx.getPluginExposes("platform");
       platform.register("acfun", platformInfo, ctx.signal);
     });
 
@@ -106,6 +107,7 @@ export class PluginAcfun extends BasePlugin {
         connectionStatus: 0,
         openStatus: 0,
         opened: false,
+        valid: true,
       };
     });
 

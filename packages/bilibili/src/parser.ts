@@ -9,7 +9,7 @@ import {
   UserInfo,
   LiveRoomStatsInfo,
 } from "floating-live";
-import {} from "floating-live";
+import { } from "floating-live";
 // import { generateId } from "floating-live";
 import { BilibiliRoomData, RoomBaseInfo } from "./types";
 
@@ -44,12 +44,12 @@ const parsingFunction: ParsingFunction<MessageData.All> = {
     let medal =
       info[3][0] != null
         ? {
-            level: info[3][0],
-            name: info[3][1],
-            // user: info[3][2],
-            id: info[3][12],
-            membership: info[3][10] || 0,
-          }
+          level: info[3][0],
+          name: info[3][1],
+          // user: info[3][2],
+          id: info[3][12],
+          membership: info[3][10] || 0,
+        }
         : null;
     let identity: null | UserType = 0;
     let emoticon: { [key: string]: ImageInfo } | undefined = undefined;
@@ -82,14 +82,14 @@ const parsingFunction: ParsingFunction<MessageData.All> = {
         content: content,
         image: info[0][12]
           ? {
-              name: content,
-              id: info[0][13].emoticon_unique,
-              url: info[0][13].url,
-              size:
-                info[0][13].width == info[0][13].height
-                  ? ImageSize.large
-                  : ImageSize.small,
-            }
+            name: content,
+            id: info[0][13].emoticon_unique,
+            url: info[0][13].url,
+            size:
+              info[0][13].width == info[0][13].height
+                ? ImageSize.large
+                : ImageSize.small,
+          }
           : undefined,
         emoticon: emoticon,
         user: {
@@ -180,11 +180,11 @@ const parsingFunction: ParsingFunction<MessageData.All> = {
           avatar: data.uinfo?.base?.face!,
           medal: data.fansMedal?.medalLevel
             ? {
-                level: Number(data.fansMedal.medalLevel),
-                name: data.fansMedal.medalName!,
-                id: Number(data.fansMedal.targetId),
-                membership: Number(data.fansMedal.guardLevel),
-              }
+              level: Number(data.fansMedal.medalLevel),
+              name: data.fansMedal.medalName!,
+              id: Number(data.fansMedal.targetId),
+              membership: Number(data.fansMedal.guardLevel),
+            }
             : null,
         },
       },
@@ -209,11 +209,11 @@ const parsingFunction: ParsingFunction<MessageData.All> = {
           avatar: data.uinfo?.base?.face,
           medal: data.fans_medal?.medal_level
             ? {
-                level: data.fans_medal.medal_level,
-                name: data.fans_medal.medal_name,
-                id: data.fans_medal.target_id,
-                membership: data.fans_medal.guard_level,
-              }
+              level: data.fans_medal.medal_level,
+              name: data.fans_medal.medal_name,
+              id: data.fans_medal.target_id,
+              membership: data.fans_medal.guard_level,
+            }
             : null,
         },
       },
@@ -237,11 +237,11 @@ const parsingFunction: ParsingFunction<MessageData.All> = {
           medal:
             data.fans_medal && data.fans_medal.medal_level
               ? {
-                  level: data.fans_medal.medal_level,
-                  name: data.fans_medal.medal_name,
-                  id: data.fans_medal.target_id,
-                  membership: data.fans_medal.guard_level,
-                }
+                level: data.fans_medal.medal_level,
+                name: data.fans_medal.medal_name,
+                id: data.fans_medal.target_id,
+                membership: data.fans_medal.guard_level,
+              }
               : null,
           membership: data.guard_level,
           avatar: data.face,
@@ -354,11 +354,11 @@ const parsingFunction: ParsingFunction<MessageData.All> = {
           medal:
             data.medal_info && data.medal_info.medal_level
               ? {
-                  level: data.medal_info.medal_level,
-                  name: data.medal_info.medal_name,
-                  id: data.medal_info.target_id,
-                  membership: data.medal_info.guard_level,
-                }
+                level: data.medal_info.medal_level,
+                name: data.medal_info.medal_name,
+                id: data.medal_info.target_id,
+                membership: data.medal_info.guard_level,
+              }
               : null,
           membership: data.user_info.guard_level,
         },
@@ -595,6 +595,7 @@ export function parseGetInfoByRoom(
     openStatus: 0,
     opened: false,
     connectionStatus: 0,
+    valid: true,
   };
 }
 
@@ -628,6 +629,7 @@ export function parseRoomBaseInfo(data: RoomBaseInfo): BilibiliRoomData {
     openStatus: 0,
     opened: false,
     connectionStatus: 0,
+    valid: true,
   };
 }
 

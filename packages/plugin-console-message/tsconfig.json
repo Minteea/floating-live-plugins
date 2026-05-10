@@ -8,11 +8,11 @@
     "moduleResolution": "bundler",
     "esModuleInterop": true,
     "strict": true,
-    "rootDir": ".",
-    "outDir": ".",
+    "rootDir": "./src",
+    "outDir": "./dist",
     "skipLibCheck": true
   },
-  "files": ["index.ts"],
+  "files": ["./src/index.ts"],
   "tsc-alias": {
     "resolveFullPaths": true
   }

@@ -51,8 +51,8 @@ export class Auth extends BasePlugin {
   private readonly info: Record<string, UserInfo | null> = {};
   room: AppPluginExposesMap["room"] | null = null;
   init() {
-    this.ctx.whenRegister("room", (room) => {
-      this.room = room;
+    this.ctx.whenRegister("room", () => {
+      this.room = this.ctx.getPluginExposes("room");
       return () => {
         this.room = null;
       };

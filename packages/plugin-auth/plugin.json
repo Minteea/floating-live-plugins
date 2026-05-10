@@ -1,0 +1,7 @@
+{
+  "name": "auth",
+  "author": "FloatingLive",
+  "version": "0.16.5",
+  "description": "Authentication plugin for FloatingLive",
+  "main": "index.js"
+}

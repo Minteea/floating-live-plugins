@@ -12,7 +12,7 @@
     "demo": "tsx ./demo/demo.ts"
   },
   "devDependencies": {
-    "@floating-live/plugin-tools": "^0.1.0-alpha.4",
+    "@floating-live/plugin-tools": "^0.1.0-alpha.5",
     "@types/fs-extra": "^9.0.13",
     "@types/node": "^22.13.14",
     "dotenv": "^16.5.0",

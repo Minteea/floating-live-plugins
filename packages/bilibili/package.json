@@ -13,7 +13,7 @@
     "prepack": "npm run build",
     "postpack": "npm run clear",
     "build:plugin": "vite build --config plugin.vite.config.ts",
-    "version": "floating-live-plugin-tools version"
+    "version": "floating-live-plugin-tools version && git add plugin.json"
   },
   "publishConfig": {
     "access": "public"
@@ -24,7 +24,7 @@
     "md5": "^2.3.0"
   },
   "devDependencies": {
-    "@floating-live/plugin-tools": "^0.1.0-alpha.4",
+    "@floating-live/plugin-tools": "^0.1.0-alpha.5",
     "@types/md5": "^2.3.0",
     "@types/websocket": "^1.0.5",
     "@types/ws": "^8.5.3",

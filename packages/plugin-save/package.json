@@ -13,7 +13,7 @@
     "prepack": "npm run build",
     "postpack": "npm run clear",
     "build:plugin": "vite build --config plugin.vite.config.ts",
-    "version": "floating-live-plugin-tools version"
+    "version": "floating-live-plugin-tools version && git add plugin.json"
   },
   "publishConfig": {
     "access": "public"
@@ -23,7 +23,7 @@
     "fs-extra": "^11.1.0"
   },
   "devDependencies": {
-    "@floating-live/plugin-tools": "^0.1.0-alpha.4",
+    "@floating-live/plugin-tools": "^0.1.0-alpha.5",
     "@types/fs-extra": "^9.0.13",
     "floating-live": "^0.17.0-alpha.1",
     "rimraf": "^3.0.2",

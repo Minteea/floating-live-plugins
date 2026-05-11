@@ -596,6 +596,8 @@ export function parseGetInfoByRoom(
     opened: false,
     connectionStatus: 0,
     valid: true,
+    service: "",
+    serviceId: "bilibili",
   };
 }
 
@@ -630,6 +632,8 @@ export function parseRoomBaseInfo(data: RoomBaseInfo): BilibiliRoomData {
     opened: false,
     connectionStatus: 0,
     valid: true,
+    service: "",
+    serviceId: "bilibili",
   };
 }
 

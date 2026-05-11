@@ -263,6 +263,8 @@ export class RoomAcfun extends LiveRoom {
       availableTickets,
       enterRoomAttach,
       valid: true,
+      service: this.service,
+      serviceId: this.serviceId
     };
   }
 

@@ -270,14 +270,14 @@ __metadata:
     "@types/websocket": "npm:^1.0.5"
     "@types/ws": "npm:^8.5.3"
     acfun-live-danmaku: "npm:^0.8.0"
-    floating-live: "npm:^0.17.0-alpha.1"
+    floating-live: "npm:^0.17.0-alpha.5"
     rimraf: "npm:^3.0.2"
     tsc-alias: "npm:^1.8.16"
     typescript: "npm:^5.9.3"
     vite: "npm:^8.0.11"
     vite-plugin-static-copy: "npm:^4.1.0"
   peerDependencies:
-    floating-live: 0.17.0-alpha.1
+    floating-live: 0.17.0-alpha.5
   languageName: unknown
   linkType: soft
 
@@ -291,14 +291,14 @@ __metadata:
     "@types/websocket": "npm:^1.0.5"
     "@types/ws": "npm:^8.5.3"
     bilibili-live-danmaku: "npm:^0.7.15"
-    floating-live: "npm:^0.17.0-alpha.1"
+    floating-live: "npm:^0.17.0-alpha.5"
     md5: "npm:^2.3.0"
     rimraf: "npm:^3.0.2"
     tsc-alias: "npm:^1.8.16"
     typescript: "npm:^5.9.3"
     vite: "npm:^8.0.11"
   peerDependencies:
-    floating-live: 0.17.0-alpha.1
+    floating-live: 0.17.0-alpha.5
   languageName: unknown
   linkType: soft
 
@@ -317,13 +317,13 @@ __metadata:
     "@types/fs-extra": "npm:^9.0.13"
     "@types/websocket": "npm:^1.0.5"
     "@types/ws": "npm:^8.5.3"
-    floating-live: "npm:^0.17.0-alpha.1"
+    floating-live: "npm:^0.17.0-alpha.5"
     rimraf: "npm:^3.0.2"
     tsc-alias: "npm:^1.8.16"
     typescript: "npm:^5.9.3"
     vite: "npm:^8.0.11"
   peerDependencies:
-    floating-live: 0.17.0-alpha.1
+    floating-live: 0.17.0-alpha.5
   languageName: unknown
   linkType: soft
 
@@ -333,13 +333,13 @@ __metadata:
   dependencies:
     "@floating-live/plugin-tools": "npm:^0.1.0-alpha.5"
     chalk: "npm:^5.4.1"
-    floating-live: "npm:^0.17.0-alpha.1"
+    floating-live: "npm:^0.17.0-alpha.5"
     rimraf: "npm:^3.0.2"
     tsc-alias: "npm:^1.8.16"
     typescript: "npm:^5.9.3"
     vite: "npm:^8.0.11"
   peerDependencies:
-    floating-live: 0.17.0-alpha.1
+    floating-live: 0.17.0-alpha.5
   languageName: unknown
   linkType: soft
 
@@ -349,13 +349,13 @@ __metadata:
   dependencies:
     "@floating-live/plugin-tools": "npm:^0.1.0-alpha.5"
     chalk: "npm:^5.4.1"
-    floating-live: "npm:^0.17.0-alpha.1"
+    floating-live: "npm:^0.17.0-alpha.5"
     rimraf: "npm:^3.0.2"
     tsc-alias: "npm:^1.8.16"
     typescript: "npm:^5.9.3"
     vite: "npm:^8.0.11"
   peerDependencies:
-    floating-live: 0.17.0-alpha.1
+    floating-live: 0.17.0-alpha.5
   languageName: unknown
   linkType: soft
 
@@ -366,14 +366,14 @@ __metadata:
     "@floating-live/plugin-tools": "npm:^0.1.0-alpha.5"
     "@msgpack/msgpack": "npm:^3.1.3"
     "@types/fs-extra": "npm:^9.0.13"
-    floating-live: "npm:^0.17.0-alpha.1"
+    floating-live: "npm:^0.17.0-alpha.5"
     fs-extra: "npm:^11.1.0"
     rimraf: "npm:^3.0.2"
     tsc-alias: "npm:^1.8.16"
     typescript: "npm:^5.9.3"
     vite: "npm:^8.0.11"
   peerDependencies:
-    floating-live: 0.17.0-alpha.1
+    floating-live: 0.17.0-alpha.5
   languageName: unknown
   linkType: soft
 
@@ -396,7 +396,7 @@ __metadata:
     "@types/fs-extra": "npm:^9.0.13"
     "@types/node": "npm:^22.13.14"
     dotenv: "npm:^16.5.0"
-    floating-live: "npm:^0.17.0-alpha.1"
+    floating-live: "npm:^0.17.0-alpha.5"
     lerna: "npm:^8.2.2"
     rimraf: "npm:^3.0.2"
     tsc-alias: "npm:^1.8.16"
@@ -414,13 +414,13 @@ __metadata:
   resolution: "@floating-live/snapshot@workspace:packages/snapshot"
   dependencies:
     "@floating-live/plugin-tools": "npm:^0.1.0-alpha.5"
-    floating-live: "npm:^0.17.0-alpha.1"
+    floating-live: "npm:^0.17.0-alpha.5"
     rimraf: "npm:^3.0.2"
     tsc-alias: "npm:^1.8.16"
     typescript: "npm:^5.9.3"
     vite: "npm:^8.0.11"
   peerDependencies:
-    floating-live: 0.17.0-alpha.1
+    floating-live: 0.17.0-alpha.5
   languageName: unknown
   linkType: soft
 
@@ -2839,10 +2839,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"floating-live@npm:^0.17.0-alpha.1":
-  version: 0.17.0-alpha.1
-  resolution: "floating-live@npm:0.17.0-alpha.1"
-  checksum: 10c0/9df8b68be1a17958dde7e663460cb6f6100db544a487c11d081dbf3ad93e28bb0a90b97502793f8c4c8d1555e2ff8adf87b6255fdfc536dc661d81b7a40b2d95
+"floating-live@npm:^0.17.0-alpha.5":
+  version: 0.17.0-alpha.5
+  resolution: "floating-live@npm:0.17.0-alpha.5"
+  checksum: 10c0/271e7a08fa529e2600976bbf73307617422a5468819a7cdb785f136443ccb3a3eb79c04a5063aa96792f2ce0587c3e2fef042727ab5feaca598a8207fd782445
   languageName: node
   linkType: hard
 

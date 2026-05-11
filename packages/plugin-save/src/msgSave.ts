@@ -12,15 +12,15 @@ function getTimeStr(timestamp: number) {
   return `${startDate.getFullYear()}${(startDate.getMonth() + 1)
     .toString()
     .padStart(2, "0")}${startDate
-    .getDate()
-    .toString()
-    .padStart(2, "0")}_${startDate
-    .getHours()
-    .toString()
-    .padStart(2, "0")}${startDate
-    .getMinutes()
-    .toString()
-    .padStart(2, "0")}${startDate.getSeconds().toString().padStart(2, "0")}`;
+      .getDate()
+      .toString()
+      .padStart(2, "0")}_${startDate
+        .getHours()
+        .toString()
+        .padStart(2, "0")}${startDate
+          .getMinutes()
+          .toString()
+          .padStart(2, "0")}${startDate.getSeconds().toString().padStart(2, "0")}`;
 }
 /** 获取当次记录状态
  * S=直播开始 L=直播中 E=直播结束 O=未开播
@@ -46,9 +46,8 @@ interface SaveInfoConfig {
 class SaveInfo implements SaveInfoConfig {
   /** 文件id */
   get fileId() {
-    return `${this.platform}_${this.roomId}-${getTimeStr(this.timestamp || 0)}${
-      this.sliceByStatus ? getRecordStatus(this.status, this.statusChanged) : ""
-    }${this.part ? `.${this.part}` : ""}`;
+    return `${this.platform}_${this.roomId}-${getTimeStr(this.timestamp || 0)}${this.sliceByStatus ? getRecordStatus(this.status, this.statusChanged) : ""
+      }${this.part ? `.${this.part}` : ""}`;
   }
   /** 平台 */
   platform: string;
@@ -98,6 +97,7 @@ class SaveInfo implements SaveInfoConfig {
   }
 }
 
+/** @deprecated */
 class MsgSave {
   /** 获取房间数据 */
   getRoomData: (key: string) => LiveRoomData | undefined;

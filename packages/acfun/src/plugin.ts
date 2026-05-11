@@ -3,6 +3,7 @@ import {
   PluginContext,
   LiveRoomStatus,
   type LivePlatformInfo,
+  appError,
 } from "floating-live";
 import { RoomAcfun } from "./room";
 import {
@@ -108,6 +109,8 @@ export class PluginAcfun extends BasePlugin {
         openStatus: 0,
         opened: false,
         valid: true,
+        service: "",
+        serviceId: "acfun"
       };
     });
 
@@ -121,13 +124,12 @@ export class PluginAcfun extends BasePlugin {
     // 若没有_did信息，则重置cookie
     if (!cookies.get("_did")) {
       cookies = new Cookies(
-        (await requestDidCookie().catch((e) =>
-          this.throw(
-            new this.Error("credentials:check_failed", {
-              message: "无法获取必要cookie信息",
-              cause: e,
-            }),
-          ),
+        (await requestDidCookie().catch((e) => {
+          throw appError("credentials:check_failed", {
+            message: "无法获取必要cookie信息",
+            reason: e,
+          })
+        }
         ))!,
       );
     }
@@ -136,14 +138,12 @@ export class PluginAcfun extends BasePlugin {
     if (cookies.has("acPasstoken") && cookies.has("auth_key")) {
       const result = await requestTokenGet({
         cookie: cookies.toString(),
-      }).catch((e) =>
-        this.throw(
-          new this.Error("credentials:check_failed", {
-            message: "获取token失败(登录模式)",
-            cause: e,
-          }),
-        ),
-      );
+      }).catch((e) => {
+        throw appError("credentials:check_failed", {
+          message: "获取token失败(登录模式)",
+          reason: e,
+        })
+      });
       const { userId } = result!;
       return {
         credentials: cookies.toString(),

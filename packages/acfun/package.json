@@ -26,7 +26,7 @@
     "@floating-live/plugin-tools": "^0.1.0-alpha.5",
     "@types/websocket": "^1.0.5",
     "@types/ws": "^8.5.3",
-    "floating-live": "^0.17.0-alpha.1",
+    "floating-live": "^0.17.0-alpha.5",
     "rimraf": "^3.0.2",
     "tsc-alias": "^1.8.16",
     "typescript": "^5.9.3",
@@ -34,7 +34,7 @@
     "vite-plugin-static-copy": "^4.1.0"
   },
   "peerDependencies": {
-    "floating-live": "0.17.0-alpha.1"
+    "floating-live": "0.17.0-alpha.5"
   },
   "files": [
     "dist",

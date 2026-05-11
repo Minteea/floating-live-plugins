@@ -1,4 +1,5 @@
 import {
+  InvalidLiveRoom,
   LiveRoom,
   LiveRoomData,
   LiveRoomStatus,
@@ -21,15 +22,15 @@ function getTimeStr(timestamp: number) {
   return `${startDate.getFullYear()}${(startDate.getMonth() + 1)
     .toString()
     .padStart(2, "0")}${startDate
-    .getDate()
-    .toString()
-    .padStart(2, "0")}_${startDate
-    .getHours()
-    .toString()
-    .padStart(2, "0")}${startDate
-    .getMinutes()
-    .toString()
-    .padStart(2, "0")}${startDate.getSeconds().toString().padStart(2, "0")}`;
+      .getDate()
+      .toString()
+      .padStart(2, "0")}_${startDate
+        .getHours()
+        .toString()
+        .padStart(2, "0")}${startDate
+          .getMinutes()
+          .toString()
+          .padStart(2, "0")}${startDate.getSeconds().toString().padStart(2, "0")}`;
 }
 /** 获取当次记录状态
  * S=直播开始 L=直播中 E=直播结束 O=未开播
@@ -59,9 +60,8 @@ export abstract class MessageWriter implements SaveConfig {
   currentStream!: NodeJS.WritableStream;
   /** 文件id */
   getFileId() {
-    return `${this.platform}_${this.roomId}@${getTimeStr(this.timestamp || 0)}${
-      this.sliceByStatus ? getRecordFlag(this.status, this.statusChanged) : ""
-    }${this.part ? `.${this.part}` : ""}`;
+    return `${this.platform}_${this.roomId}@${getTimeStr(this.timestamp || 0)}${this.sliceByStatus ? getRecordFlag(this.status, this.statusChanged) : ""
+      }${this.part ? `.${this.part}` : ""}`;
   }
   /** 根目录 */
   readonly rootPath: string;
@@ -155,8 +155,8 @@ export abstract class MessageWriter implements SaveConfig {
     );
     newRoomInfo
       ? this.currentStream.write(
-          this.formatMessage(this.getRecordStartInfo(newRoomInfo)),
-        )
+        this.formatMessage(this.getRecordStartInfo(newRoomInfo)),
+      )
       : this.currentStream.write(this.formatMessage(this.getRecordPartInfo()));
   }
   /** 写消息 */
@@ -241,7 +241,7 @@ class MsgSave {
   /** 获取房间数据 */
   getRoomData: (key: string) => LiveRoomData | undefined;
   /** 获取房间列表 */
-  getRoomList: () => LiveRoom[];
+  getRoomList: () => (LiveRoom | InvalidLiveRoom)[];
   /** 文件路径 */
   path: string;
   /** 前缀 */
@@ -264,7 +264,7 @@ class MsgSave {
       getRoomList,
     }: {
       getRoomData: (key: string) => LiveRoomData | undefined;
-      getRoomList: () => LiveRoom[];
+      getRoomList: () => (LiveRoom | InvalidLiveRoom)[];
     },
     {
       filePath,
@@ -298,7 +298,7 @@ class MsgSave {
 
   changeFormat(format: "jsonl" | "msgpack") {
     this.#format = format;
-    this.list.forEach((writer) => {});
+    this.list.forEach((writer) => { });
   }
 
   write(
@@ -379,11 +379,11 @@ class MsgSave {
     const writer =
       mode === "jsonl"
         ? new JsonlWriter(info, saveInfoConfig, {
-            suffix: this.suffix + ".jsonl",
-          })
+          suffix: this.suffix + ".jsonl",
+        })
         : new MsgpackWriter(info, saveInfoConfig, {
-            suffix: this.suffix + ".msgpack",
-          });
+          suffix: this.suffix + ".msgpack",
+        });
     this.list.set(roomKey, writer);
     return writer;
   }

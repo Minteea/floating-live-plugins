@@ -23,7 +23,6 @@
     "@types/fs-extra": "^9.0.13",
     "@types/websocket": "^1.0.5",
     "@types/ws": "^8.5.3",
-    "floating-live": "^0.17.0-alpha.5",
     "rimraf": "^3.0.2",
     "tsc-alias": "^1.8.16",
     "typescript": "^5.9.3",

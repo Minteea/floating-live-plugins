@@ -270,7 +270,6 @@ __metadata:
     "@types/websocket": "npm:^1.0.5"
     "@types/ws": "npm:^8.5.3"
     acfun-live-danmaku: "npm:^0.8.0"
-    floating-live: "npm:^0.17.0-alpha.5"
     rimraf: "npm:^3.0.2"
     tsc-alias: "npm:^1.8.16"
     typescript: "npm:^5.9.3"
@@ -291,7 +290,6 @@ __metadata:
     "@types/websocket": "npm:^1.0.5"
     "@types/ws": "npm:^8.5.3"
     bilibili-live-danmaku: "npm:^0.7.15"
-    floating-live: "npm:^0.17.0-alpha.5"
     md5: "npm:^2.3.0"
     rimraf: "npm:^3.0.2"
     tsc-alias: "npm:^1.8.16"
@@ -317,7 +315,6 @@ __metadata:
     "@types/fs-extra": "npm:^9.0.13"
     "@types/websocket": "npm:^1.0.5"
     "@types/ws": "npm:^8.5.3"
-    floating-live: "npm:^0.17.0-alpha.5"
     rimraf: "npm:^3.0.2"
     tsc-alias: "npm:^1.8.16"
     typescript: "npm:^5.9.3"
@@ -333,7 +330,6 @@ __metadata:
   dependencies:
     "@floating-live/plugin-tools": "npm:^0.1.0-alpha.5"
     chalk: "npm:^5.4.1"
-    floating-live: "npm:^0.17.0-alpha.5"
     rimraf: "npm:^3.0.2"
     tsc-alias: "npm:^1.8.16"
     typescript: "npm:^5.9.3"
@@ -349,7 +345,6 @@ __metadata:
   dependencies:
     "@floating-live/plugin-tools": "npm:^0.1.0-alpha.5"
     chalk: "npm:^5.4.1"
-    floating-live: "npm:^0.17.0-alpha.5"
     rimraf: "npm:^3.0.2"
     tsc-alias: "npm:^1.8.16"
     typescript: "npm:^5.9.3"
@@ -366,7 +361,6 @@ __metadata:
     "@floating-live/plugin-tools": "npm:^0.1.0-alpha.5"
     "@msgpack/msgpack": "npm:^3.1.3"
     "@types/fs-extra": "npm:^9.0.13"
-    floating-live: "npm:^0.17.0-alpha.5"
     fs-extra: "npm:^11.1.0"
     rimraf: "npm:^3.0.2"
     tsc-alias: "npm:^1.8.16"
@@ -396,7 +390,7 @@ __metadata:
     "@types/fs-extra": "npm:^9.0.13"
     "@types/node": "npm:^22.13.14"
     dotenv: "npm:^16.5.0"
-    floating-live: "npm:^0.17.0-alpha.5"
+    floating-live: "npm:^0.17.0-alpha.6"
     lerna: "npm:^8.2.2"
     rimraf: "npm:^3.0.2"
     tsc-alias: "npm:^1.8.16"
@@ -414,7 +408,6 @@ __metadata:
   resolution: "@floating-live/snapshot@workspace:packages/snapshot"
   dependencies:
     "@floating-live/plugin-tools": "npm:^0.1.0-alpha.5"
-    floating-live: "npm:^0.17.0-alpha.5"
     rimraf: "npm:^3.0.2"
     tsc-alias: "npm:^1.8.16"
     typescript: "npm:^5.9.3"
@@ -2839,10 +2832,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"floating-live@npm:^0.17.0-alpha.5":
-  version: 0.17.0-alpha.5
-  resolution: "floating-live@npm:0.17.0-alpha.5"
-  checksum: 10c0/271e7a08fa529e2600976bbf73307617422a5468819a7cdb785f136443ccb3a3eb79c04a5063aa96792f2ce0587c3e2fef042727ab5feaca598a8207fd782445
+"floating-live@npm:^0.17.0-alpha.6":
+  version: 0.17.0-alpha.6
+  resolution: "floating-live@npm:0.17.0-alpha.6"
+  checksum: 10c0/8d8c9362c748322b2648b419eb19a4133bb1d2db967f1b965a0307c84216d02f5cc372b40600e461298fb92c23ea21f3ba97424f9c9c77d914b0f8b5eab31d9e
   languageName: node
   linkType: hard
 

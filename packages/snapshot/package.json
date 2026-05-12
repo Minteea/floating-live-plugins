@@ -20,7 +20,6 @@
   },
   "devDependencies": {
     "@floating-live/plugin-tools": "^0.1.0-alpha.5",
-    "floating-live": "^0.17.0-alpha.5",
     "rimraf": "^3.0.2",
     "tsc-alias": "^1.8.16",
     "typescript": "^5.9.3",

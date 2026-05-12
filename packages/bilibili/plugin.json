@@ -1,5 +1,6 @@
 {
   "name": "bilibili",
+  "role": "platform/bilibili",
   "author": "FloatingLive",
   "version": "0.17.0-alpha.1",
   "description": "Bilibili plugin for FloatingLive",

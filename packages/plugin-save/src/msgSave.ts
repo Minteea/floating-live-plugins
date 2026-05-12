@@ -1,26 +1,21 @@
 import fs from "fs-extra";
-import {
-  FloatingLive,
-  LiveRoomData,
-  LiveRoomStatus,
-  PluginContext,
-} from "floating-live";
-import path from "path";
+import { LiveRoomData, LiveRoomStatus } from "floating-live";
+import path from "node:path";
 
 function getTimeStr(timestamp: number) {
   let startDate = new Date(timestamp);
   return `${startDate.getFullYear()}${(startDate.getMonth() + 1)
     .toString()
     .padStart(2, "0")}${startDate
-      .getDate()
-      .toString()
-      .padStart(2, "0")}_${startDate
-        .getHours()
-        .toString()
-        .padStart(2, "0")}${startDate
-          .getMinutes()
-          .toString()
-          .padStart(2, "0")}${startDate.getSeconds().toString().padStart(2, "0")}`;
+    .getDate()
+    .toString()
+    .padStart(2, "0")}_${startDate
+    .getHours()
+    .toString()
+    .padStart(2, "0")}${startDate
+    .getMinutes()
+    .toString()
+    .padStart(2, "0")}${startDate.getSeconds().toString().padStart(2, "0")}`;
 }
 /** 获取当次记录状态
  * S=直播开始 L=直播中 E=直播结束 O=未开播
@@ -46,8 +41,9 @@ interface SaveInfoConfig {
 class SaveInfo implements SaveInfoConfig {
   /** 文件id */
   get fileId() {
-    return `${this.platform}_${this.roomId}-${getTimeStr(this.timestamp || 0)}${this.sliceByStatus ? getRecordStatus(this.status, this.statusChanged) : ""
-      }${this.part ? `.${this.part}` : ""}`;
+    return `${this.platform}_${this.roomId}-${getTimeStr(this.timestamp || 0)}${
+      this.sliceByStatus ? getRecordStatus(this.status, this.statusChanged) : ""
+    }${this.part ? `.${this.part}` : ""}`;
   }
   /** 平台 */
   platform: string;
@@ -130,7 +126,7 @@ class MsgSave {
       open?: boolean;
       sliceByStatus?: boolean;
       sliceByCount?: number;
-    }
+    },
   ) {
     this.paused = !open;
     this.getRoomData = getRoomData;
@@ -142,7 +138,7 @@ class MsgSave {
   }
   write(
     message: any,
-    { platform, roomId }: { platform: string; roomId: string | number }
+    { platform, roomId }: { platform: string; roomId: string | number },
   ) {
     if (this.paused) return;
     const roomKey = `${platform}:${roomId}`;
@@ -153,7 +149,7 @@ class MsgSave {
     if (!saveInfo.exist) this.createFile(roomKey);
     const file = path.join(
       this.path,
-      `${this.prefix}${saveInfo.fileId}${this.suffix}.jsonl`
+      `${this.prefix}${saveInfo.fileId}${this.suffix}.jsonl`,
     );
     fs.writeFile(
       file,
@@ -162,7 +158,7 @@ class MsgSave {
       (err) => {
         if (err) throw err;
         // console.log('写入成功');
-      }
+      },
     );
     // 保存信息递增
     saveInfo.count += 1;
@@ -226,7 +222,7 @@ class MsgSave {
     const saveInfo = this.list.get(roomKey)!;
     const file = path.join(
       this.path,
-      `${this.prefix}${saveInfo.fileId}${this.suffix}.jsonl`
+      `${this.prefix}${saveInfo.fileId}${this.suffix}.jsonl`,
     );
     // 如果文件已存在，则将文件标记为已存在，否则创建一个文件并写入record_info信息
     if (fs.existsSync(file)) {

@@ -264,7 +264,7 @@ export class RoomAcfun extends LiveRoom {
       enterRoomAttach,
       valid: true,
       service: this.service,
-      serviceId: this.serviceId
+      serviceId: this.serviceId,
     };
   }
 
@@ -605,9 +605,6 @@ export class RoomAcfun extends LiveRoom {
     this.client?.wsClose();
     this.emitConnention(LiveConnectionStatus.off);
     this.emit("close");
-  }
-  destroy() {
-    this.close();
   }
 }
 

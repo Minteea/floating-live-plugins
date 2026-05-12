@@ -36,6 +36,7 @@ const platformInfo: LivePlatformInfo = {
 
 export class PluginAcfun extends BasePlugin {
   static pluginName = "acfun";
+  static role = "platform/acfun";
   private tokens: { did: string; userId: number; st: string } | null = null;
   init(ctx: PluginContext) {
     ctx.whenRegister("platform", () => {
@@ -110,7 +111,7 @@ export class PluginAcfun extends BasePlugin {
         opened: false,
         valid: true,
         service: "",
-        serviceId: "acfun"
+        serviceId: "acfun",
       };
     });
 
@@ -128,9 +129,8 @@ export class PluginAcfun extends BasePlugin {
           throw appError("credentials:check_failed", {
             message: "无法获取必要cookie信息",
             reason: e,
-          })
-        }
-        ))!,
+          });
+        }))!,
       );
     }
 
@@ -142,7 +142,7 @@ export class PluginAcfun extends BasePlugin {
         throw appError("credentials:check_failed", {
           message: "获取token失败(登录模式)",
           reason: e,
-        })
+        });
       });
       const { userId } = result!;
       return {

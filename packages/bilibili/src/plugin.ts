@@ -66,11 +66,12 @@ export interface PluginOptions {
 
 export class PluginBilibili extends BasePlugin {
   static pluginName = "bilibili";
+  static role = "platform/bilibili";
   apiClient = new BilibiliApiClientEx();
   room: AppPluginExposesMap["room"] | null = null;
   init(ctx: PluginContext) {
     ctx.whenRegister("platform", () => {
-      const platform = ctx.getPluginExposes("platform")
+      const platform = ctx.getPluginExposes("platform");
       platform.register("bilibili", platformInfo, ctx.signal);
     });
     ctx.whenRegister("room", () => {

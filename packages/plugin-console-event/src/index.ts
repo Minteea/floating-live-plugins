@@ -34,8 +34,8 @@ export class ConsoleEvent extends BasePlugin {
 
       log(
         `[${status}] ${anchor}${chalk.dim(":")} ${chalk.bold.yellow(
-          title
-        )}  ${chalk.dim(area?.join(">") || "")}`
+          title,
+        )}  ${chalk.dim(area?.join(">") || "")}`,
       );
     });
     ctx.on("room:detail", ({ key, detail }) => {
@@ -46,7 +46,7 @@ export class ConsoleEvent extends BasePlugin {
         list.push(`${chalk.dim("[标题]")} ${chalk.bold(detail.title)}`);
       if (detail.area)
         list.push(
-          `${chalk.dim("[分区]")} ${chalk.bold(detail.area.join(">"))}`
+          `${chalk.dim("[分区]")} ${chalk.bold(detail.area.join(">"))}`,
         );
       log(list.join("  "));
     });
@@ -56,11 +56,21 @@ export class ConsoleEvent extends BasePlugin {
     ctx.on("room:close", ({ key }) => {
       log(`[${key}]房间已关闭`);
     });
-    ctx.on("room:add", ({ key }) => {
-      log(`[room]已添加房间: ${key}`);
+    ctx.on("room:add", ({ key, room }) => {
+      if (room.valid) {
+        log(`[room]已添加房间: ${key}`);
+      } else {
+        log(`[room]添加未生效房间: ${key}`);
+      }
     });
     ctx.on("room:remove", ({ key }) => {
       log(`[room]已移除房间: ${key}`);
+    });
+    ctx.on("room:validate", ({ key }) => {
+      log(`[room]房间已生效: ${key}`);
+    });
+    ctx.on("room:invalidate", ({ key }) => {
+      log(`[room]房间已失效: ${key}`);
     });
     ctx.on("plugin:register", ({ pluginName }) => {
       log(`[plugin]已添加插件: ${pluginName}`);

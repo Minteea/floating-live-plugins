@@ -362,6 +362,7 @@ export class RoomBilibili extends LiveRoom implements BilibiliRoomData {
       uid: this.#tokens?.uid,
       buvid: this.#tokens?.buvid,
       key: this.#tokens?.key,
+      decodeProtobuf: true,
     }) as ClientWithAbortController;
 
     const controller = new AbortController();

@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@floating-live/cookies": "^0.1.0",
-    "bilibili-live-danmaku": "^0.7.15",
+    "bilibili-live-danmaku": "^0.7.16",
     "md5": "^2.3.0"
   },
   "devDependencies": {

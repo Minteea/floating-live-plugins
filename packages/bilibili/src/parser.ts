@@ -9,7 +9,7 @@ import {
   UserInfo,
   LiveRoomStatsInfo,
 } from "floating-live";
-import { } from "floating-live";
+import {} from "floating-live";
 // import { generateId } from "floating-live";
 import { BilibiliRoomData, RoomBaseInfo } from "./types";
 
@@ -17,7 +17,7 @@ import { DataXliveGetInfoByRoom, MessageData } from "bilibili-live-danmaku";
 type ParsingFunction<T extends MessageData.All> = {
   [K in T["cmd"]]?: (
     msg: any,
-    room?: LiveRoomData
+    room?: LiveRoomData,
   ) => LiveMessage.All | undefined;
 };
 
@@ -44,12 +44,12 @@ const parsingFunction: ParsingFunction<MessageData.All> = {
     let medal =
       info[3][0] != null
         ? {
-          level: info[3][0],
-          name: info[3][1],
-          // user: info[3][2],
-          id: info[3][12],
-          membership: info[3][10] || 0,
-        }
+            level: info[3][0],
+            name: info[3][1],
+            // user: info[3][2],
+            id: info[3][12],
+            membership: info[3][10] || 0,
+          }
         : null;
     let identity: null | UserType = 0;
     let emoticon: { [key: string]: ImageInfo } | undefined = undefined;
@@ -82,14 +82,14 @@ const parsingFunction: ParsingFunction<MessageData.All> = {
         content: content,
         image: info[0][12]
           ? {
-            name: content,
-            id: info[0][13].emoticon_unique,
-            url: info[0][13].url,
-            size:
-              info[0][13].width == info[0][13].height
-                ? ImageSize.large
-                : ImageSize.small,
-          }
+              name: content,
+              id: info[0][13].emoticon_unique,
+              url: info[0][13].url,
+              size:
+                info[0][13].width == info[0][13].height
+                  ? ImageSize.large
+                  : ImageSize.small,
+            }
           : undefined,
         emoticon: emoticon,
         user: {
@@ -180,11 +180,11 @@ const parsingFunction: ParsingFunction<MessageData.All> = {
           avatar: data.uinfo?.base?.face!,
           medal: data.fansMedal?.medalLevel
             ? {
-              level: Number(data.fansMedal.medalLevel),
-              name: data.fansMedal.medalName!,
-              id: Number(data.fansMedal.targetId),
-              membership: Number(data.fansMedal.guardLevel),
-            }
+                level: Number(data.fansMedal.medalLevel),
+                name: data.fansMedal.medalName!,
+                id: Number(data.fansMedal.targetId),
+                membership: Number(data.fansMedal.guardLevel),
+              }
             : null,
         },
       },
@@ -209,11 +209,11 @@ const parsingFunction: ParsingFunction<MessageData.All> = {
           avatar: data.uinfo?.base?.face,
           medal: data.fans_medal?.medal_level
             ? {
-              level: data.fans_medal.medal_level,
-              name: data.fans_medal.medal_name,
-              id: data.fans_medal.target_id,
-              membership: data.fans_medal.guard_level,
-            }
+                level: data.fans_medal.medal_level,
+                name: data.fans_medal.medal_name,
+                id: data.fans_medal.target_id,
+                membership: data.fans_medal.guard_level,
+              }
             : null,
         },
       },
@@ -228,7 +228,7 @@ const parsingFunction: ParsingFunction<MessageData.All> = {
       roomId: room?.id || 0,
       userId: data.uid,
       type: "gift",
-      id: msg_id || data.combo_id,
+      id: msg_id || data.combo_send?.combo_id,
       timestamp: send_time || data.timestamp * 1000,
       info: {
         user: {
@@ -237,16 +237,17 @@ const parsingFunction: ParsingFunction<MessageData.All> = {
           medal:
             data.fans_medal && data.fans_medal.medal_level
               ? {
-                level: data.fans_medal.medal_level,
-                name: data.fans_medal.medal_name,
-                id: data.fans_medal.target_id,
-                membership: data.fans_medal.guard_level,
-              }
+                  level: data.fans_medal.medal_level,
+                  name: data.fans_medal.medal_name,
+                  id: data.fans_medal.target_id,
+                  membership: data.fans_medal.guard_level,
+                }
               : null,
           membership: data.guard_level,
           avatar: data.face,
         },
         gift: {
+          image: data.gift_info.img_basic,
           name: data.giftName,
           id: data.giftId,
           num: data.num,
@@ -275,6 +276,7 @@ const parsingFunction: ParsingFunction<MessageData.All> = {
       timestamp: send_time || data.start_time * 1000,
       info: {
         user: {
+          // avatar: "",
           name: data.username,
           id: data.uid,
         },
@@ -354,11 +356,11 @@ const parsingFunction: ParsingFunction<MessageData.All> = {
           medal:
             data.medal_info && data.medal_info.medal_level
               ? {
-                level: data.medal_info.medal_level,
-                name: data.medal_info.medal_name,
-                id: data.medal_info.target_id,
-                membership: data.medal_info.guard_level,
-              }
+                  level: data.medal_info.medal_level,
+                  name: data.medal_info.medal_name,
+                  id: data.medal_info.target_id,
+                  membership: data.medal_info.guard_level,
+                }
               : null,
           membership: data.user_info.guard_level,
         },
@@ -548,14 +550,14 @@ const parsingFunction: ParsingFunction<MessageData.All> = {
 /** 转换bilibili直播弹幕为floating通用格式 */
 export function parseMessage(
   data: MessageData.All,
-  room?: BilibiliRoomData
+  room?: BilibiliRoomData,
 ): LiveMessage.All | undefined {
   return parsingFunction[data.cmd]?.(data, room);
 }
 
 /** 转换bilibili直播间信息为floating通用格式 */
 export function parseGetInfoByRoom(
-  data: DataXliveGetInfoByRoom
+  data: DataXliveGetInfoByRoom,
 ): BilibiliRoomData {
   const {
     room_info,
@@ -643,12 +645,12 @@ export function mergeLiveRoomData<T extends LiveRoomData>(
   const room: Partial<LiveRoomData> = Object.assign({}, ...list);
   const detail: LiveRoomDetailInfo = Object.assign(
     {},
-    ...list.map((d) => d.detail)
+    ...list.map((d) => d.detail),
   );
   const anchor: UserInfo = Object.assign({}, ...list.map((d) => d.anchor));
   const stats: LiveRoomStatsInfo = Object.assign(
     {},
-    ...list.map((d) => d.stats)
+    ...list.map((d) => d.stats),
   );
   return { ...room, detail, anchor, stats } as T;
 }

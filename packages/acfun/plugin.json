@@ -2,7 +2,7 @@
   "name": "acfun",
   "role": "platform/acfun",
   "author": "FloatingLive",
-  "version": "0.17.0-alpha.2",
+  "version": "0.17.0-alpha.3",
   "description": "AcFun plugin for FloatingLive",
   "main": "plugin.js"
 }

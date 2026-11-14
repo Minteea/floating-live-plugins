@@ -9,7 +9,8 @@
   "scripts": {
     "check": "tsc --noEmit",
     "clear": "rimraf ./dist",
-    "build": "npm run clear && npm run check &&  tsc --build && tsc-alias",
+    "build": "npm run clear && npm run check && tsc --build && npm run copy:source && tsc-alias",
+    "copy:source": "node scripts/copy-source.mjs",
     "prepack": "npm run build",
     "postpack": "npm run clear",
     "build:plugin": "vite build --config plugin.vite.config.ts",

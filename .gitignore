@@ -8,8 +8,6 @@ saves/
 .yarnrc.yml
 
 # dist
-packages/**/*.js
-packages/**/*.d.ts
 
 # Logs
 logs

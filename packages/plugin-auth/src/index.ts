@@ -68,8 +68,8 @@ export class Auth extends BasePlugin {
       return this.check(platform, credentials);
     });
 
-    this.ctx.useHook("room.create", ({ serviceId, id, options }) => {
-      const auths = this.list.get(serviceId);
+    this.ctx.useHook("room.create", ({ service, id, options }) => {
+      const auths = this.list.get(service);
       if (!auths) return;
       options.credentials ??= auths.credentials;
       options.tokens ??= auths.tokens;

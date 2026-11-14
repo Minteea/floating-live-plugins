@@ -51,7 +51,7 @@ export class Save extends BasePlugin {
 
     this.messageSave = new MsgWriter(
       {
-        getRoomData: (key) => this.room?.data(key),
+        getRoomData: (key) => this.room?.info(key),
         getRoomList: () => this.room?.getList() || [],
       },
       {
@@ -63,7 +63,7 @@ export class Save extends BasePlugin {
     );
     this.rawSave = new MsgWriter(
       {
-        getRoomData: (key) => this.room?.data(key),
+        getRoomData: (key) => this.room?.info(key),
         getRoomList: () => this.room?.getList() || [],
       },
       {

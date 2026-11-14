@@ -1,5 +1,5 @@
 import { BilibiliRoomData, ConnectTokens } from "./types";
-import { LiveWS, parseLiveConfig } from "bilibili-live-danmaku";
+import { LiveWS } from "@laplace.live/ws";
 import { parseGetInfoByRoom, parseMessage, parseRoomBaseInfo } from "./parser";
 import {
   LiveConnectionStatus,
@@ -9,6 +9,8 @@ import {
   LiveRoom,
   LiveRoomOpenStatus,
 } from "floating-live";
+
+import { parseLiveConfig } from "bilibili-live-danmaku"
 import { BilibiliApiClientEx } from "./utils/request";
 
 /** 配置项 */
@@ -50,6 +52,8 @@ interface ClientWithAbortController extends LiveWS {
 export class RoomBilibili extends LiveRoom implements BilibiliRoomData {
   /** 平台id */
   readonly platform: string = "bilibili";
+  /** 服务id */
+  readonly service: string = "bilibili";
   /** 直播间号 */
   readonly id: number;
   /** 直播间room_id */
@@ -362,7 +366,7 @@ export class RoomBilibili extends LiveRoom implements BilibiliRoomData {
       uid: this.#tokens?.uid,
       buvid: this.#tokens?.buvid,
       key: this.#tokens?.key,
-      decodeProtobuf: true,
+      // decodeProtobuf: true,
     }) as ClientWithAbortController;
 
     const controller = new AbortController();
@@ -402,7 +406,7 @@ export class RoomBilibili extends LiveRoom implements BilibiliRoomData {
     client.addEventListener(
       "MESSAGE",
       ({ data }) => {
-        const m = parseMessage(data, this);
+        const m = parseMessage(data as any, this);
         m && this.emitMessage(m);
         this.emitRaw(data);
       },

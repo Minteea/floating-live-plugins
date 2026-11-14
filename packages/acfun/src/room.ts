@@ -70,6 +70,8 @@ interface ClientWithAbortController extends AcClient {
 export class RoomAcfun extends LiveRoom {
   /** 平台id */
   readonly platform: string = "acfun";
+  /** 服务id */
+  readonly service: string = "acfun";
   /** 房间id */
   readonly id: number;
   /** 直播展示信息 */
@@ -240,9 +242,11 @@ export class RoomAcfun extends LiveRoom {
 
     return {
       platform: "acfun",
+      service: "acfun",
       id: id,
       key: `acfun:${id}`,
       liveId: liveId,
+      pending: false,
       detail: {
         title: caption,
         cover: liveId
@@ -263,8 +267,6 @@ export class RoomAcfun extends LiveRoom {
       availableTickets,
       enterRoomAttach,
       valid: true,
-      service: this.service,
-      serviceId: this.serviceId,
     };
   }
 

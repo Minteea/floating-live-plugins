@@ -29,7 +29,7 @@
     "vite": "^8.0.11"
   },
   "peerDependencies": {
-    "floating-live": "0.17.0-alpha.5"
+    "floating-live": "0.17.0-alpha.15"
   },
   "files": [
     "dist",

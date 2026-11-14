@@ -59,13 +59,13 @@ const parsingFunction: ParsingFunction = {
       id: "",
       timestamp: Number(data.sendTimeMs),
       type: "comment",
-      info: {
+      data: {
         content: data.content,
         user: getUserInfo(data.userInfo),
       },
     };
+    msg.userId = msg.data.user.id;
     msg.id = generateId(msg);
-    msg.userId = msg.info.user.id;
     return msg;
   },
   CommonActionSignalGift: (data, room, giftList) => {
@@ -76,13 +76,13 @@ const parsingFunction: ParsingFunction = {
       id: "",
       type: "gift",
       timestamp: Number(data.sendTimeMs),
-      info: {
+      data: {
         user: getUserInfo(data.userInfo),
         gift: getGiftInfo(data, giftList),
       },
     };
+    msg.userId = msg.data.user.id;
     msg.id = generateId(msg);
-    msg.userId = msg.info.user.id;
     return msg;
   },
   CommonActionSignalUserEnterRoom: (data, room) => {
@@ -93,12 +93,12 @@ const parsingFunction: ParsingFunction = {
       type: "entry",
       id: "",
       timestamp: Number(data.sendTimeMs),
-      info: {
+      data: {
         user: getUserInfo(data.userInfo),
       },
     };
+    msg.userId = msg.data.user.id;
     msg.id = generateId(msg);
-    msg.userId = msg.info.user.id;
     return msg;
   },
   CommonActionSignalUserFollowAuthor: (data, room) => {
@@ -109,12 +109,12 @@ const parsingFunction: ParsingFunction = {
       type: "follow",
       id: "",
       timestamp: Number(data.sendTimeMs),
-      info: {
+      data: {
         user: getUserInfo(data.userInfo),
       },
     };
+    msg.userId = msg.data.user.id;
     msg.id = generateId(msg);
-    msg.userId = msg.info.user.id;
     return msg;
   },
   CommonActionSignalLike: (data, room) => {
@@ -125,12 +125,12 @@ const parsingFunction: ParsingFunction = {
       type: "like",
       id: "",
       timestamp: Number(data.sendTimeMs),
-      info: {
+      data: {
         user: getUserInfo(data.userInfo),
       },
     };
+    msg.userId = msg.data.user.id;
     msg.id = generateId(msg);
-    msg.userId = msg.info.user.id;
     return msg;
   },
   AcfunActionSignalJoinClub: (data, room) => {
@@ -141,15 +141,15 @@ const parsingFunction: ParsingFunction = {
       type: "join",
       id: "",
       timestamp: Number(data.joinTimeMs),
-      info: {
+      data: {
         user: {
           id: Number(data.fansInfo.userId || 0) || 0,
           name: data.fansInfo.name || "",
         },
       },
     };
+    msg.userId = msg.data.user.id;
     msg.id = generateId(msg);
-    msg.userId = msg.info.user.id;
     return msg;
   },
   CommonStateSignalDisplayInfo: (data, room) => {
@@ -160,7 +160,7 @@ const parsingFunction: ParsingFunction = {
       type: "live_stats",
       id: "",
       timestamp: getDateTimestamp(),
-      info: {
+      data: {
         like: stringToNumber(data.likeCount),
         online: stringToNumber(data.watchingCount),
       },
@@ -182,7 +182,7 @@ const parsingFunction: ParsingFunction = {
         msg = {
           ...base,
           type: "live_end",
-          info: {
+          data: {
             status: LiveRoomStatus.off,
           },
         };
@@ -191,8 +191,9 @@ const parsingFunction: ParsingFunction = {
         msg = {
           ...base,
           type: "live_cut",
-          info: {
+          data: {
             message: data.bannedInfo?.banReason || "",
+            status: LiveRoomStatus.off,
           },
         };
         break;
@@ -252,7 +253,7 @@ function getGiftInfo(
     num: batchSize,
     value: currency == 1 ? value / 1000 : value,
     valueType: currency,
-    valueName: currency == 1 ? "AC币" : "香蕉",
+    coinName: currency == 1 ? "AC币" : "香蕉",
     price: currency == 1 ? value / 10000 : 0,
     currency: "CNY",
     image: webpPicList?.[0].url,

@@ -93,7 +93,7 @@ export class PluginBilibili extends BasePlugin {
       },
     );
     ctx.registerCommand(
-      "bilibili.room.data",
+      "bilibili.room.info",
       async (e, id: string | number) => {
         return await fetchLiveRoomData(this.apiClient, parseInt(id.toString()));
       },

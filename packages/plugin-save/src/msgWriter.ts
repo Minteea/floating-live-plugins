@@ -239,7 +239,7 @@ class MsgpackWriter extends MessageWriter {
 
 class MsgSave {
   /** 获取房间数据 */
-  getRoomData: (key: string) => LiveRoomData | undefined;
+  getRoomData: (key: string) => LiveRoomData | null | undefined;
   /** 获取房间列表 */
   getRoomList: () => (LiveRoom | InvalidLiveRoom)[];
   /** 文件路径 */
@@ -263,7 +263,7 @@ class MsgSave {
       getRoomData,
       getRoomList,
     }: {
-      getRoomData: (key: string) => LiveRoomData | undefined;
+      getRoomData: (key: string) => LiveRoomData | null | undefined;
       getRoomList: () => (LiveRoom | InvalidLiveRoom)[];
     },
     {

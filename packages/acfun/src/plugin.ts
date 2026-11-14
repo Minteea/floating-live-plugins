@@ -53,7 +53,7 @@ export class PluginAcfun extends BasePlugin {
       },
     );
 
-    ctx.registerCommand("acfun.room.data", async (e, id: string | number) => {
+    ctx.registerCommand("acfun.room.info", async (e, id: string | number) => {
       if (!this.tokens) {
         const cookies = new Cookies(await requestDidCookie());
         const { userId, "acfun.api.visitor_st": st } =
@@ -110,8 +110,9 @@ export class PluginAcfun extends BasePlugin {
         openStatus: 0,
         opened: false,
         valid: true,
-        service: "",
-        serviceId: "acfun",
+        service: "acfun",
+        serviceName: "",
+        pending: false,
       };
     });
 

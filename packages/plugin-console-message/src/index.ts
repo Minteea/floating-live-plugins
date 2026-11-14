@@ -26,10 +26,10 @@ export class ConsoleMessage extends BasePlugin {
   }
 
   /** 获取用户信息 */
-  public getUserInfo(message: { platform: string; info: { user: UserInfo } }) {
+  public getUserInfo(message: { platform: string; data: { user: UserInfo } }) {
     const list: string[] = [];
     const platform = message.platform;
-    const { name, medal, membership, type } = message.info.user; // 用户信息
+    const { name, medal, membership, type } = message.data.user; // 用户信息
     if (medal) list.push(chalk.green(`[${medal.name}(${medal.level})] `));
     if (membership)
       list.push(
@@ -57,9 +57,9 @@ export class ConsoleMessage extends BasePlugin {
     switch (message.type) {
       case "comment": {
         let user = this.getUserInfo(message);
-        let content = message.info.content;
+        let content = message.data.content;
         log(
-          `${user}${chalk.dim(":")} ${message.info.image ? chalk.dim("[img]") : ""
+          `${user}${chalk.dim(":")} ${message.data.image ? chalk.dim("[img]") : ""
           }${content}`,
         );
         break;
@@ -75,28 +75,29 @@ export class ConsoleMessage extends BasePlugin {
           name,
           num,
           value,
+          coins,
           action = "送出",
-          valueName,
-        } = message.info.gift;
+          coinName,
+        } = message.data.gift;
         log(
           `${user} ${action} ${chalk.yellow(`${name} x${num}`)} ${chalk.dim(
-            `(${value}${valueName})`,
+            `(${coins ?? value}${coinName})`,
           )}`,
         );
         break;
       }
       case "membership": {
         let user = this.getUserInfo(message);
-        let name = message.info.name;
+        let name = message.data.name;
         log(chalk.bold(`${user} 开通了 ${chalk.yellow(name)}`));
         break;
       }
       case "superchat": {
         let user = this.getUserInfo(message);
-        let second = Math.round(message.info.duration / 1000);
+        let second = Math.round(message.data.duration / 1000);
         log(
           chalk.bold(
-            `${chalk.cyan(`[SC(${second}s)]`)} ${user}${chalk.dim(":")} ${message.info.content
+            `${chalk.cyan(`[SC(${second}s)]`)} ${user}${chalk.dim(":")} ${message.data.content
             }`,
           ),
         );
@@ -119,9 +120,9 @@ export class ConsoleMessage extends BasePlugin {
       }
       case "block": {
         let user = this.getUserInfo(message);
-        let operator = message.info.operator?.type
+        let operator = message.data.operator?.type
           ? { [UserType.admin]: "房管", [UserType.anchor]: "主播" }[
-          message.info.operator.type
+          message.data.operator.type
           ]
           : "";
         log(`${user} 已被${operator}禁言`);
@@ -138,7 +139,7 @@ export class ConsoleMessage extends BasePlugin {
       }
       case "live_cut": {
         let roomKey = `${message.platform}:${message.roomId}`;
-        let msg = message.info.message;
+        let msg = message.data.message;
         log(
           chalk.bold(
             `${chalk.red("[!]")} 直播间 ${chalk.yellow(

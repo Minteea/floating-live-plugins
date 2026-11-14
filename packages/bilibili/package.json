@@ -20,6 +20,8 @@
   },
   "dependencies": {
     "@floating-live/cookies": "^0.1.0",
+    "@laplace.live/internal": "^1.3.42",
+    "@laplace.live/ws": "^8.1.1",
     "bilibili-live-danmaku": "^0.7.16",
     "md5": "^2.3.0"
   },
@@ -34,7 +36,7 @@
     "vite": "^8.0.11"
   },
   "peerDependencies": {
-    "floating-live": "0.17.0-alpha.5"
+    "floating-live": "0.17.0-alpha.15"
   },
   "files": [
     "dist",

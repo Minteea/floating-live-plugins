@@ -33,7 +33,7 @@
     "vite-plugin-static-copy": "^4.1.0"
   },
   "peerDependencies": {
-    "floating-live": "0.17.0-alpha.5"
+    "floating-live": "0.17.0-alpha.15"
   },
   "files": [
     "dist",

@@ -2,7 +2,7 @@
   "name": "bilibili",
   "role": "platform/bilibili",
   "author": "FloatingLive",
-  "version": "0.17.0-alpha.5",
+  "version": "0.17.0-alpha.6",
   "description": "Bilibili plugin for FloatingLive",
   "main": "plugin.js"
 }

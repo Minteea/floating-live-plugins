@@ -1,4 +1,4 @@
-import { bilibili } from "./proto";
+import { bilibili } from "./proto/index.js";
 
 export const decode_INTERACT_WORD_V2 = (pb: string) => {
   return bilibili.live.xuserreward.v1.InteractWord.decode(

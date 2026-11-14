@@ -396,7 +396,7 @@ export class RoomBilibili extends LiveRoom implements BilibiliRoomData {
       { signal },
     );
     client.addEventListener(
-      "CONNECT_SUCCESS",
+      "live",
       () => {
         // 连接到直播间
         this.emitConnention(LiveConnectionStatus.entered);
@@ -404,7 +404,7 @@ export class RoomBilibili extends LiveRoom implements BilibiliRoomData {
       { signal },
     );
     client.addEventListener(
-      "MESSAGE",
+      "msg",
       ({ data }) => {
         const m = parseMessage(data as any, this);
         m && this.emitMessage(m);

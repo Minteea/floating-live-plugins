@@ -10,7 +10,7 @@ const options = {
   rooms: [
     {
       platform: "bilibili",
-      id: 1852504554,
+      id: 24371027,
     },
   ],
   open: true,
